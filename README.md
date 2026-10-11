@@ -1,0 +1,3 @@
+MATRIX is a personal finance app for Windows that keeps everything on your own computer. Track bank and cash accounts in JOD, USD and EUR, record income, expenses and transfers, follow gold and silver purchases with average cost and purity conversion, keep a ledger of who owes you and whom you owe, and see it all in charts. It supports multiple users with optional password encryption, light and dark modes, an accent colour wheel, and full English and Arabic (right-to-left) layouts. Nothing is sent online.
+[MATRIX BY MIO GIT A BIT.zip](https://github.com/user-attachments/files/33311281/MATRIX.BY.MIO.GIT.A.BIT.zip)
+
