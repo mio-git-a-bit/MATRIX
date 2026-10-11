@@ -1,0 +1,1676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MATRIX</title>
+<script>
+try{
+  var r=document.documentElement,lk=JSON.parse(localStorage.getItem('ledger-look')||'{}'),lg=localStorage.getItem('ledger-lang')||'en';
+  r.dataset.theme=lk.mode==='dark'?'dark':'light';
+  if(lk.hue!=null)r.style.setProperty('--h',lk.hue);
+  if(lk.k!=null)r.style.setProperty('--k',lk.k);
+  r.lang=lg;r.dir=lg==='ar'?'rtl':'ltr';
+}catch(e){}
+</script>
+<style>
+:root{
+  --h:265;--k:.7;
+  color-scheme:light;
+  --bg:#f3f3f5;
+  --surface:#ffffff;
+  --surface2:#ededf0;
+  --line:#e0e0e5;
+  --text:#111114;
+  --muted:#64646e;
+  --accent:hsl(var(--h) calc(30% + var(--k)*55%) 50%);
+  --accent-text:#fff;
+  --pos:#15803d;--neg:#c53030;--gold:#b7791f;--silver:#7d8591;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#a3a3ad;
+}
+:root[data-theme=dark]{
+  color-scheme:dark;
+  --bg:#08080a;
+  --surface:#111113;
+  --surface2:#1a1a1d;
+  --line:#26262b;
+  --text:#f4f4f5;
+  --muted:#a1a1aa;
+  --accent:hsl(var(--h) calc(30% + var(--k)*55%) 62%);
+  --pos:#4ade80;--neg:#f87171;--gold:#e3b84f;--silver:#b8bec8;
+  --shadow:none;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#6f6f7a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI Variable Text","Segoe UI","Noto Sans Arabic",system-ui,sans-serif;font-size:14px;line-height:1.45;background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+html[lang=ar] *{letter-spacing:0!important}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#app{display:flex;min-height:100vh}
+.flip{display:inline-block}
+html[dir=rtl] .flip{transform:scaleX(-1)}
+
+/* ---------- sidebar (first flex child: left in LTR, right in RTL) ---------- */
+nav{position:sticky;top:var(--tb);height:calc(100vh - var(--tb));width:236px;flex:none;display:flex;flex-direction:column;gap:3px;padding:16px 12px 14px;border-inline-end:1px solid var(--line);background:var(--surface)}
+.brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:650;padding:2px 10px 22px;letter-spacing:-.01em}
+.mark{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),hsl(calc(var(--h) + 28) 70% 42%));color:#fff;display:grid;place-items:center;font-style:normal;flex:none}
+nav button.nv{display:flex;align-items:center;gap:12px;width:100%;text-align:start;padding:10px 12px;border:0;border-radius:11px;background:none;color:var(--muted);cursor:pointer;font-weight:550}
+nav button.nv:hover{background:var(--surface2);color:var(--text)}
+nav button.nv.on{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-weight:650}
+nav .sp{flex:1}
+.me{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);cursor:pointer;text-align:start}
+.me:hover{border-color:var(--accent)}
+.me .mn{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me .ms{font-size:12px;color:var(--muted)}
+.av{width:36px;height:36px;border-radius:50%;background:hsl(var(--ah) 58% 44%);color:#fff;display:grid;place-items:center;font-weight:650;flex:none;font-size:15px}
+.av.lg{width:68px;height:68px;font-size:28px}
+
+main{flex:1;min-width:0;padding:30px 40px 56px;width:100%}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}
+.ph h1{margin:0;font-size:26px;font-weight:650;letter-spacing:-.02em}
+.ph .acts{display:flex;gap:8px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+@media (max-width:1000px){.s3{grid-column:span 6}.s4,.s5,.s6,.s7,.s8{grid-column:span 12}.hero{grid-row:auto!important}main{padding:22px 18px 48px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:15px;font-weight:650}
+.card h3{margin:0;font-size:15px;font-weight:650}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.hero{will-change:transform;grid-row:span 2;color:#fff;border:0;background:linear-gradient(135deg,hsl(var(--h) calc(35% + var(--k)*45%) 44%),hsl(calc(var(--h) + 24) calc(30% + var(--k)*45%) 26%));position:relative;overflow:hidden;display:flex;flex-direction:column}
+.hero::after{content:'';position:absolute;inset-inline-end:-70px;top:-70px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
+.hero .muted{color:rgba(255,255,255,.72)}
+.hero .num{font-size:44px;font-weight:650;letter-spacing:-.03em;line-height:1.1;margin:8px 0 4px}
+html[lang=ar] .hero .num{font-size:40px}
+.hbreak{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 18px;margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.2)}
+.hbreak b{display:block;font-size:15px}
+.stat{display:flex;align-items:center;gap:14px}
+.stat>div{min-width:0}
+.stat .num{font-size:19px;font-weight:650;letter-spacing:-.01em;white-space:nowrap}
+.badge{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);flex:none}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.warn{margin-top:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.14);font-size:13px}
+
+.row{display:flex;align-items:center;gap:14px;padding:10px 8px;margin-inline:-8px;border-radius:12px;cursor:pointer}
+.row:hover{background:var(--surface2)}
+.row .mid{flex:1;min-width:0}
+.row .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .amt{font-weight:650;white-space:nowrap;text-align:end}
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:9px 14px;border-radius:11px;cursor:pointer;font-weight:550}
+.btn:hover{background:var(--surface2)}
+.btn.p{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.btn.p:hover{filter:brightness(1.08);background:var(--accent)}
+.btn.d{color:var(--neg)}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+input,select{width:100%;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+input:hover,select:hover{border-color:var(--muted)}
+input:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input[type=range]{padding:0;accent-color:var(--accent);height:24px}
+.ghlink{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);color:var(--text);text-decoration:none;transition:border-color .2s,transform .2s,box-shadow .2s}
+.ghlink:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
+.ghi{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--text);color:var(--bg);flex:none}
+.ght{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.ght b{font-size:15px}
+.gha{opacity:.55;display:grid}html[dir=rtl] .gha{transform:scaleX(-1)}
+.dfil{margin-top:-4px}
+.pres{display:flex;gap:6px;flex-wrap:wrap}
+.pre{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:550;cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s}
+.pre:hover{border-color:var(--accent);transform:translateY(-1px)}
+.pre.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.drange{display:flex;align-items:center;gap:8px}
+.drange .btn{white-space:nowrap;height:40px}
+.drange input{width:150px}
+.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--surface2);border:1px solid var(--line);border-radius:12px}
+.seg button,.seg label{margin:0;border:0;background:none;padding:7px 16px;border-radius:9px;cursor:pointer;color:var(--muted);font-weight:550;font-size:13.5px;text-align:center}
+.seg button.on,.seg label:has(input:checked){background:var(--accent);color:var(--accent-text)}
+.seg input{display:none}
+.seg.full{display:flex}.seg.full label{flex:1}
+
+.set{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 0;border-bottom:1px solid var(--line)}
+.set:last-child{border-bottom:0;padding-bottom:0}.set:first-of-type{padding-top:0}
+.set .l{font-weight:600}
+.rate{display:flex;align-items:center;gap:10px;margin-top:10px}.rate b{min-width:72px;font-weight:600}
+.rate input{max-width:160px}
+
+/* color wheel */
+.wheelwrap{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.wheel{position:relative;width:200px;height:200px;border-radius:50%;flex:none;touch-action:none;cursor:pointer;direction:ltr;
+  background:conic-gradient(from 0deg,hsl(0 85% 55%),hsl(30 85% 55%),hsl(60 85% 55%),hsl(90 85% 55%),hsl(120 85% 55%),hsl(150 85% 55%),hsl(180 85% 55%),hsl(210 85% 55%),hsl(240 85% 55%),hsl(270 85% 55%),hsl(300 85% 55%),hsl(330 85% 55%),hsl(360 85% 55%))}
+.wheel::after{content:'';position:absolute;inset:15%;border-radius:50%;background:var(--surface)}
+.knob{position:absolute;z-index:2;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.45);background:hsl(var(--h) 85% 55%);pointer-events:none}
+.wc{position:absolute;inset:0;display:grid;place-content:center;text-align:center;z-index:1;pointer-events:none;font-size:22px;font-weight:650}
+.wc span{font-size:12px;font-weight:500;color:var(--muted)}
+.swatches{display:flex;gap:8px;margin-top:12px}
+.swatches i{width:34px;height:34px;border-radius:10px;display:block;border:1px solid var(--line)}
+
+/* charts */
+.legend{display:flex;gap:16px;margin:-6px 0 8px;color:var(--muted);font-size:12.5px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart{width:100%;height:auto;display:block;direction:ltr}
+.chart text{fill:var(--muted);font-size:11px}
+.chart .grid-l{stroke:var(--line);stroke-width:1}
+.donutwrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut{width:170px;height:170px;flex:none;direction:ltr}
+.donut .dc1{fill:var(--text);font-size:22px;font-weight:650}
+.donut .dc2{fill:var(--muted);font-size:12px}
+.dl{flex:1;min-width:150px}
+.dl div{display:flex;align-items:center;gap:8px;padding:5px 0}
+.dl i{width:10px;height:10px;border-radius:3px;flex:none}
+.dl .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tip{position:fixed;z-index:60;background:var(--text);color:var(--bg);padding:7px 11px;border-radius:9px;font-size:12.5px;pointer-events:none;max-width:260px;line-height:1.4}
+
+/* metals & people */
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.gold{background:var(--gold)}.dot.silver{background:var(--silver)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.eq{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.eq:last-child{border-bottom:0}
+.eq .f{color:var(--muted)}
+.eq b{font-size:16px}
+.eq em{font-style:normal;color:var(--gold);font-weight:650;margin-inline-start:6px}
+.pf{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.pf>div{flex:1;min-width:150px}
+.chip{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--surface2);font-size:12.5px;font-weight:600;margin:2px 4px 2px 0}
+html[dir=rtl] .chip{margin:2px 0 2px 4px}
+.chip.pos{background:color-mix(in srgb,var(--pos) 15%,transparent)}
+.chip.neg{background:color-mix(in srgb,var(--neg) 15%,transparent)}
+
+/* auth */
+.auth{width:100%;min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(700px 420px at 50% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 70%),var(--bg)}
+.authbox{width:min(540px,100%);background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:32px;box-shadow:0 30px 80px rgba(0,0,0,.18)}
+.authhead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.authhead h1{margin:0;font-size:25px;letter-spacing:-.02em}
+.authhead .mark{width:44px;height:44px;border-radius:14px}
+.authsub{color:var(--muted);margin:0 0 22px}
+.ucards{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+.ucard{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;border:1px solid var(--line);background:var(--surface2);border-radius:18px;cursor:pointer;font-weight:600;min-width:0}
+.ucard span.nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ucard:hover{border-color:var(--accent)}
+.ucard.add{border-style:dashed;background:none;color:var(--muted);justify-content:center}
+.center{text-align:center}
+
+dialog{border:1px solid var(--line);border-radius:20px;padding:22px;width:min(500px,94vw);background:var(--surface);color:var(--text);max-height:92vh;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog h1{margin:0 0 6px;font-size:19px;font-weight:650}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f2.one{grid-template-columns:1fr}
+.toast{position:fixed;inset-inline:0;bottom:30px;margin:auto;width:max-content;max-width:90vw;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:90}
+.restart{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:100;font-size:18px;font-weight:600}
+
+/* ---------- title bar ---------- */
+:root{--tb:46px}
+.tb{position:fixed;inset:0 0 auto 0;height:var(--tb);z-index:50;display:flex;align-items:center;gap:10px;padding:0 150px 0 14px;background:var(--surface);border-bottom:1px solid var(--line);-webkit-app-region:drag;user-select:none;transition:background-color .35s ease,border-color .25s ease}
+.tb::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--accent) 50%,transparent);opacity:.55;pointer-events:none}
+.tb button{-webkit-app-region:no-drag}
+.tb-brand{display:flex;align-items:center;gap:9px;font-size:14px;letter-spacing:.01em}
+.tb-brand b{font-weight:700;letter-spacing:.02em}
+.tb .mark{width:26px;height:26px;border-radius:8px;box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 45%,transparent)}
+.tb-sep{width:1px;height:18px;background:var(--line);margin:0 4px}
+.tb-crumb{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:550;color:var(--muted);padding:4px 11px;border-radius:99px;background:var(--surface2);animation:fadein .4s ease both}
+.tb-crumb i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent);animation:ping 2.4s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}70%,100%{box-shadow:0 0 0 7px transparent}}
+.tb-sp{flex:1}
+.tb-btn{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer;transition:background-color .2s,color .2s,transform .2s}
+.tb-btn:hover{background:var(--surface2);color:var(--accent)}
+.tb-btn:active{transform:scale(.9) rotate(20deg)}
+.tb-user{display:flex;align-items:center;gap:8px;height:32px;padding:0 10px 0 4px;border:1px solid var(--line);border-radius:99px;background:var(--surface2);cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:border-color .2s,transform .15s}
+html[dir=rtl] .tb-user{padding:0 4px 0 10px}
+.tb-user:hover{border-color:var(--accent)}
+.tb-user:active{transform:scale(.96)}
+.tb-user .av{width:24px;height:24px;font-size:12px}
+.tb-user svg{color:var(--muted);transform:rotate(90deg);transition:transform .2s}
+.tb-user.open svg{transform:rotate(-90deg)}
+.tb-user{padding-inline-end:12px!important}
+body{padding-top:var(--tb)}
+/* no text selection anywhere except real input fields */
+html,body,body *{-webkit-user-select:none;user-select:none}
+input,textarea,[contenteditable=true],input *,textarea *{-webkit-user-select:text;user-select:text}
+img,svg{-webkit-user-drag:none}
+::selection{background:transparent}
+input::selection,textarea::selection{background:color-mix(in oklab,var(--accent,#e33) 40%,transparent)}
+#app{min-height:calc(100vh - var(--tb))}
+.auth{min-height:calc(100vh - var(--tb))}
+
+/* ---------- user menu ---------- */
+.umenu{position:fixed;z-index:300;width:290px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:8px;box-shadow:0 22px 60px rgba(0,0,0,.3);transform-origin:top right;animation:menuin .18s cubic-bezier(.2,.8,.2,1)}
+.um-h{display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:6px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.um-h .av{width:42px;height:42px;font-size:17px}
+.um-t{display:flex;flex-direction:column;min-width:0;text-align:start;gap:1px}
+.um-t b{font-size:14.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.um-s{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:500}
+.um-s i{width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 25%,transparent)}
+.um-s.on{color:var(--pos)}
+.um-l{display:flex;flex-direction:column;gap:2px}
+.um-u,.um-a{display:flex;align-items:center;gap:12px;width:100%;padding:9px 10px;border:0;border-radius:11px;background:none;color:var(--text);cursor:pointer;text-align:start;font-size:14px;font-weight:550;transition:background-color .15s}
+.um-u:hover,.um-a:hover{background:var(--surface2)}
+.um-u .av{width:34px;height:34px;font-size:14px}
+.um-sep{height:1px;background:var(--line);margin:8px 4px}
+.um-a svg{color:var(--muted);flex:none}.um-a:hover svg{color:var(--accent)}
+.ucard .um-s{font-size:11.5px}
+/* ---------- MATRIX logo ---------- */
+.mark.logo{background:none!important;color:var(--text);padding:0;overflow:visible;box-shadow:none!important;border-radius:0}
+.mark.logo svg{width:100%;height:100%;display:block}
+.tb-brand b{font-size:15px;font-weight:800;letter-spacing:.16em}
+html[lang=ar] .tb-brand b,html[lang=ar] .authhead h1{letter-spacing:.14em!important}
+.authhead h1{font-weight:800;letter-spacing:.12em}
+/* ---------- finishing touches ---------- */
+html{scrollbar-gutter:auto}
+::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
+*::-webkit-scrollbar{width:0;height:0;display:none}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px;border:4px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--muted);background-clip:content-box}
+select{appearance:none;-webkit-appearance:none;padding-inline-end:36px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+html[dir=rtl] select{background-position:left 12px center}
+.empty::before{content:'';display:block;width:48px;height:48px;margin:0 auto 12px;border-radius:16px;background:var(--surface2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 13l2.2-7h11.6L20 13'/%3E%3Cpath d='M4 13v6h16v-6h-5l-1 2h-4l-1-2z'/%3E%3C/svg%3E") center/24px no-repeat}
+nav button.nv{position:relative}
+nav button.nv.on::before{content:'';position:absolute;inset-inline-start:-12px;top:22%;bottom:22%;width:3px;border-radius:0 4px 4px 0;background:var(--accent);animation:fadein .3s ease}
+html[dir=rtl] nav button.nv.on::before{border-radius:4px 0 0 4px}
+.dx{position:absolute;top:14px;inset-inline-end:14px;width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:9px;background:none;color:var(--muted);cursor:pointer;transition:background-color .2s,color .2s,transform .2s}
+.dx:hover{background:var(--surface2);color:var(--text);transform:rotate(90deg)}
+dialog h1{padding-inline-end:34px}
+.bk{display:inline-flex}
+html[dir=ltr] .bk{transform:scaleX(-1)}
+.grp .dd{display:none}
+.side-note{display:flex;align-items:center;gap:10px;margin:0 4px;padding:12px;border-radius:12px;color:var(--muted);font-size:12.5px;line-height:1.35}
+.side-note svg{flex:none;color:var(--accent)}
+.dg{font-size:12px;font-weight:650;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:16px 0 6px}
+.card>.dg:first-child{padding-top:0}
+.delta{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin:2px 0 10px;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.17);font-size:12.5px;font-weight:600}
+.accs{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.acc{cursor:pointer;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.acc:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 14px 34px color-mix(in srgb,var(--accent) 14%,transparent)}
+.acc-h{display:flex;align-items:center;gap:12px}
+.acc-h .badge{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.acc .cc{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--surface2);font-size:11.5px;font-weight:650;color:var(--muted);margin-inline-start:8px}
+.acc-n{font-size:27px;font-weight:650;letter-spacing:-.02em;margin:8px 0 4px}
+.bar{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fff));transform-origin:left;animation:barx .9s .2s cubic-bezier(.2,.8,.2,1) both}
+html[dir=rtl] .bar i{transform-origin:right}
+@keyframes barx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.addtile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;border:1.5px dashed var(--line);border-radius:18px;background:none;color:var(--muted);cursor:pointer;font-weight:600;transition:border-color .2s,color .2s,background-color .2s,transform .18s}
+.addtile:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent);transform:translateY(-2px)}
+.pbals{display:flex;gap:34px;flex-wrap:wrap;margin:12px 0 10px}
+.pb{padding-inline-start:14px;border-inline-start:3px solid currentColor;border-radius:2px}
+.pb .pbl{font-size:12.5px;font-weight:650}
+.pb .pbn{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1.15}
+@media (max-width:900px){
+  nav{width:68px;padding:16px 8px;align-items:stretch}
+  nav button.nv span,.side-note span{display:none}
+  .side-note{justify-content:center;margin:0}
+  nav button.nv{justify-content:center;padding:12px 0}
+  nav button.nv.on::before{inset-inline-start:-8px}
+  .me{justify-content:center;padding:8px}
+  main{padding:24px 22px 48px}
+}
+@media (max-width:820px){.tb-crumb,.tb-sep{display:none}}
+
+/* ---------- custom dropdown / date picker ---------- */
+.native{position:absolute!important;left:0;top:0;opacity:0;pointer-events:none;width:1px!important;height:1px!important;padding:0!important;border:0!important;margin:0!important;overflow:hidden}
+.dd{position:relative;width:100%}
+.dd-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:14px;text-align:start;color:var(--text);transition:border-color .2s,box-shadow .2s,background-color .2s}
+.dd-btn:hover{border-color:var(--muted)}
+.dd.open .dd-btn,.dd-btn:focus-visible{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.dd-btn .dd-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-btn svg{flex:none;color:var(--muted);transition:transform .22s cubic-bezier(.2,.8,.2,1),color .2s}
+.dd.open .dd-btn svg{transform:rotate(180deg);color:var(--accent)}
+.dd-date.open .dd-btn svg{transform:none}
+.dd-btn:disabled{opacity:.55;cursor:default}
+.dd-menu,.cal{position:fixed;z-index:300;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 22px 60px rgba(0,0,0,.28),0 0 0 1px color-mix(in srgb,var(--accent) 6%,transparent);transform-origin:top center;animation:menuin .18s cubic-bezier(.2,.8,.2,1)}
+.dd-menu.up,.cal.up{transform-origin:bottom center}
+@keyframes menuin{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.dd-menu{overflow:auto;max-height:288px}
+.dd-opt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:14px;color:var(--text);transition:background-color .12s}
+.dd-opt.hi{background:var(--surface2)}
+.dd-opt.sel{color:var(--accent);font-weight:650;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.dd-opt svg{flex:none;color:var(--accent)}
+.dd-opt[data-dis]{opacity:.4;cursor:default}
+.cal{width:300px;padding:14px}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-h b{font-size:14.5px;font-weight:650}
+.cal-n{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer;transition:background-color .15s,color .15s}
+.cal-n:hover{background:var(--surface2);color:var(--accent)}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal-w{font-size:11.5px;font-weight:600;color:var(--muted);padding:5px 0}
+.cal-d{height:36px;border:0;border-radius:11px;background:none;color:var(--text);cursor:pointer;font-size:13.5px;transition:background-color .12s,transform .12s}
+.cal-d:hover{background:var(--surface2);transform:scale(1.06)}
+.cal-d.o{color:var(--muted);opacity:.45}
+.cal-d.t{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 60%,transparent)}
+.cal-d.s{background:var(--accent);color:var(--accent-text);font-weight:650;opacity:1;box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 40%,transparent)}
+.cal-f{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.cal-f button{border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:6px 10px;border-radius:9px}
+.cal-f button:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.linkbtn{border:0;background:none;color:var(--neg);font-size:13px;font-weight:550;cursor:pointer;padding:6px 2px;border-radius:6px}
+.linkbtn:hover{text-decoration:underline}
+.center .av{margin-inline:auto}
+.seg label{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.seg.full label{display:flex}
+
+/* ---------- motion ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes spin-in{from{opacity:0;transform:scale(.85) rotate(-25deg)}to{opacity:1;transform:none}}
+@keyframes sheen{from{background-position:-200% 0}to{background-position:200% 0}}
+body,.card,nav,input,select,dialog,.seg,.btn,.row,.chip{transition:background-color .35s ease,border-color .25s ease,color .3s ease,box-shadow .3s ease}
+.btn,.ucard,.me,nav button.nv,.seg button,.seg label,.row,.card[data-view]{transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .25s ease,filter .2s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.p{box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn.p:hover{box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 45%,transparent)}
+.btn:active,.ucard:active,.me:active,nav button.nv:active{transform:scale(.97)}
+nav button.nv:hover{transform:translateX(3px)}
+html[dir=rtl] nav button.nv:hover{transform:translateX(-3px)}
+.ucard:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card[data-view]:hover{transform:translateY(-2px);border-color:var(--accent)}
+.row:hover{transform:translateX(2px)}
+html[dir=rtl] .row:hover{transform:translateX(-2px)}
+main.enter .ph{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+main.enter .grid>*,main.enter>.card,main.enter>.filters,main.enter>.pf{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+main.enter .grid>*:nth-child(1){animation-delay:.04s}main.enter .grid>*:nth-child(2){animation-delay:.09s}
+main.enter .grid>*:nth-child(3){animation-delay:.14s}main.enter .grid>*:nth-child(4){animation-delay:.19s}
+main.enter .grid>*:nth-child(5){animation-delay:.24s}main.enter .grid>*:nth-child(6){animation-delay:.29s}
+main.enter .grid>*:nth-child(n+7){animation-delay:.34s}
+main.enter .row{animation:fadein .5s ease both}
+main.enter .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.2s .25s cubic-bezier(.4,0,.2,1) forwards}
+main.enter .bar{transform-box:fill-box;transform-origin:bottom;animation:grow .7s .2s cubic-bezier(.2,.8,.2,1) both}
+main.enter .donut{animation:spin-in .8s .15s cubic-bezier(.2,.8,.2,1) both}
+.auth .authbox{animation:pop .5s cubic-bezier(.2,.8,.2,1) both}
+.ucard{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.ucard:nth-child(2){animation-delay:.06s}.ucard:nth-child(3){animation-delay:.12s}.ucard:nth-child(4){animation-delay:.18s}
+dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
+dialog[open]::backdrop{animation:fadein .25s ease}
+.toast{animation:rise .3s ease both}
+.restart{animation:fadein .3s ease both;flex-direction:column;gap:14px}
+.restart::before{content:'';width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spinr .8s linear infinite}
+@keyframes spinr{to{transform:rotate(360deg)}}
+.knob{transition:transform .15s ease}
+.wheel:active .knob{transform:scale(1.18)}
+
+/* ---------- ambient background: drifting aurora over ruled ledger paper ---------- */
+body{position:relative;isolation:isolate}
+body::before{content:'';position:fixed;inset:-12%;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(48% 44% at 12% 6%,color-mix(in srgb,var(--accent) 44%,transparent),transparent 72%),
+    radial-gradient(40% 38% at 88% 90%,hsl(calc(var(--h) + 38) 85% 58% / .30),transparent 72%),
+    radial-gradient(30% 28% at 72% 12%,hsl(calc(var(--h) - 42) 85% 60% / .18),transparent 72%);
+  animation:drift 26s ease-in-out infinite alternate;will-change:transform}
+html[data-theme=light] body::before{opacity:.5}
+html::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:repeating-radial-gradient(circle at 100% 100%,transparent 0 46px,color-mix(in srgb,var(--accent) 16%,transparent) 46px 47px);-webkit-mask-image:radial-gradient(circle at 100% 100%,#000 0%,rgba(0,0,0,.6) 35%,transparent 72%);mask-image:radial-gradient(circle at 100% 100%,#000 0%,rgba(0,0,0,.6) 35%,transparent 72%)}
+@keyframes drift{from{transform:translate3d(-3%,-2%,0) scale(1)}50%{transform:translate3d(2%,3%,0) scale(1.07)}to{transform:translate3d(4%,-1%,0) scale(1.03)}}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:
+    linear-gradient(to bottom,transparent 31px,color-mix(in srgb,var(--text) 6%,transparent) 31px 32px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:100% 32px,180px 180px;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.5) 55%,rgba(0,0,0,.22) 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.5) 55%,rgba(0,0,0,.22) 100%)}
+.card:not(.hero){background:color-mix(in srgb,var(--surface) 74%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2)}
+nav{background:color-mix(in srgb,var(--surface) 70%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.tb{background:var(--surface)}
+.authbox{background:color-mix(in srgb,var(--surface) 78%,transparent);-webkit-backdrop-filter:blur(22px) saturate(1.2);backdrop-filter:blur(22px) saturate(1.2)}
+.auth{background:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header id="tb" class="tb"></header>
+<div id="app"></div>
+<dialog id="dlg"></dialog>
+<script>
+/* =====================================================================
+   Text (English / Arabic)
+   ===================================================================== */
+const I18N={
+en:{app:'MATRIX',dashboard:'Overview',transactions:'Activity',accounts:'Accounts',people:'People',metals:'Gold & Silver',settings:'Settings',
+netWorth:'Net worth',income:'Income',expense:'Expense',transfer:'Transfer',thisMonth:'This month',byCategory:'Spending by category',recent:'Recent activity',
+noTx:'Nothing here yet. Add your first transaction.',noAcc:'No accounts yet.',save:'Save',cancel:'Cancel',del:'Delete',date:'Date',amount:'Amount',account:'Account',from:'From',to:'To',received:'Amount received',category:'Category',note:'Note',name:'Name',currency:'Currency',opening:'Opening balance',
+newTx:'New transaction',editTx:'Edit transaction',newAcc:'New account',editAcc:'Edit account',addAcc:'Add account',allAcc:'All accounts',search:'Search',language:'Language',baseCur:'Base currency',baseHint:'Totals are shown in this currency. Changing it converts your rates and prices automatically.',
+rates:'Exchange rates',rateHint:'Value of 1 unit in the base currency. Enter these yourself; they are not fetched online.',rateMissing:'Missing exchange rate for',categories:'Categories',addCat:'Add category',catName:'Category name',
+data:'Your data',exportCsv:'Export transactions (CSV)',exportMetals:'Export gold & silver (CSV)',backup:'Backup (JSON)',backupWarn:'Backup files are not encrypted.',restore:'Restore backup',reset:'Erase all data',
+confirmDel:'Delete this item?',confirmRestore:'Replace all of this user\'s data with the backup?',confirmReset:'Erase ALL of this user\'s data? This cannot be undone.',needAcc:'Create an account first.',accHasTx:'This account is used by other records. Remove them first.',
+uncategorized:'Uncategorized',invalid:'Invalid file.',localNote:'All data is stored only on this PC. Make backups regularly.',sameAcc:'Choose two different accounts.',badAmount:'Enter an amount greater than zero.',noCats:'No spending this month yet.',
+appearance:'Appearance',mode:'Mode',themeLight:'Light',themeBlack:'Black',color:'Color',hueHint:'Drag around the wheel to pick any color. It colors the buttons and highlights.',intensity:'Color intensity',resetColor:'Reset color',
+langHint:'Changing the language restarts the app.',restarting:'Restarting…',accountTrend:'Account balances, last 6 months',incExp:'Income and expense, last 6 months',noData:'Add transactions to see this chart.',other:'Other',
+gold:'Gold',silver:'Silver',metal:'Metal',purity:'Purity',custom:'Custom',customPurity:'Purity (0 to 1, e.g. 0.875)',weightG:'Weight (grams)',costPerG:'Cost per gram',pureWeight:'Pure weight',
+buy:'Buy',sell:'Sell',buySell:'Buy / sell',newMetalTx:'Gold / silver transaction',editMetalTx:'Edit gold / silver transaction',paid:'Amount paid',remaining:'Remaining cost',realized:'Realized profit',unrealized:'Profit / loss on holdings',byKarat:'By purity',
+prices:'Current prices',priceHint:'Enter today\'s price yourself. It is used for current value and profit or loss.',goldPrice:'Gold 24K, price per gram',silverPrice:'Pure silver, price per gram',value:'Current value',weight:'Weight',cost:'Cost',avgCost:'Average cost per pure gram',noPrice:'Set today\'s price to see the value.',
+converter:'Gold purity converter',converterHint:'Pure (24K) gold divided by the purity gives the weight of lower-karat gold with the same gold content.',pureGold:'Pure gold, 24K (grams)',equals:'Your gold is equal to',reverse:'Karat to pure gold',reverseHint:'Weight × karat ÷ 24 gives the pure 24K gold inside.',gramsIn:'Weight (grams)',karat:'Karat',
+addPerson:'Add person',editPerson:'Edit person',personName:'Name',owedToMe:'Owed to me',iOwe:'I owe',owesYou:'owes you',youOwe:'you owe',settled:'Settled',ofCash:'of cash',signedIn:'Signed in · current',signedInShort:'Signed in',needPass:'Password required',tapSwitch:'Tap to switch',signOutAll:'Sign out everyone',bankAcc:'Bank account',cashAcc:'Cash in hand',bankShort:'Bank',handShort:'In hand',accType:'Account type',today:'Today',clear:'Clear',localNote:'Your data stays on this computer.',entriesN:'entries',vsLast:'vs last month',noPeople:'No people yet. Add someone you lend to or borrow from.',newEntry:'New entry',editEntry:'Edit entry',kind:'Type',
+lent:'I lent',theyPaid:'They paid me',borrowed:'I borrowed',iPaid:'I paid back',unit:'Currency or metal',optAccount:'Account (optional)',noAccount:'No account',noEntries:'No entries yet.',balance:'Balance',back:'Back',deletePerson:'Delete person',confirmDelPerson:'Delete this person and all their entries?',cash:'Cash',missingPrice:'Set gold and silver prices to count them.',
+whoUses:'Who is using MATRIX?',createProfile:'Create your profile',welcome:'Create a user to get started. Each user has separate accounts, people and gold & silver.',yourName:'Your name',passwordOpt:'Password (optional)',confirmPass:'Confirm password',create:'Create user',addUser:'Add user',unlock:'Unlock',wrongPass:'Wrong password.',passShort:'Use at least 4 characters.',passMismatch:'Passwords do not match.',
+forgot:'Forgot the password? Erase this user',confirmEraseUser:'Erase this user and ALL of their data? This cannot be undone.',switchUser:'Switch user',lockNow:'Lock now',profile:'Profile',userName:'User name',security:'Security',setPass:'Set password',changePass:'Change password',removePass:'Remove password',currentPass:'Current password',newPass:'New password',
+passOn:'This user is locked with a password.',passOff:'No password set.',passWarn:'Your data is encrypted with this password. If you forget it, the data cannot be recovered.',deleteUser:'Delete this user',existingData:'Your existing data will be attached to this user.',filterAll:'All',filterMoney:'Money',filterMetals:'Gold & silver',filterPeople:'People',about:'Made By',pToday:'Today',pYest:'Yesterday',pWeek:'Last 7 days',pMonth:'This month',pLMonth:'Last month',pYear:'This year',pLYear:'Last year',dFrom:'From date',dTo:'To date',clearDates:'Clear dates',saved:'Saved'},
+ar:{app:'MATRIX',dashboard:'نظرة عامة',transactions:'النشاط',accounts:'الحسابات',people:'الأشخاص',metals:'الذهب والفضة',settings:'الإعدادات',
+netWorth:'صافي الثروة',income:'دخل',expense:'مصروف',transfer:'تحويل',thisMonth:'هذا الشهر',byCategory:'المصروفات حسب الفئة',recent:'آخر النشاطات',
+noTx:'لا يوجد شيء بعد. أضف أول معاملة.',noAcc:'لا توجد حسابات بعد.',save:'حفظ',cancel:'إلغاء',del:'حذف',date:'التاريخ',amount:'المبلغ',account:'الحساب',from:'من',to:'إلى',received:'المبلغ المستلم',category:'الفئة',note:'ملاحظة',name:'الاسم',currency:'العملة',opening:'الرصيد الافتتاحي',
+newTx:'معاملة جديدة',editTx:'تعديل المعاملة',newAcc:'حساب جديد',editAcc:'تعديل الحساب',addAcc:'إضافة حساب',allAcc:'كل الحسابات',search:'بحث',language:'اللغة',baseCur:'العملة الأساسية',baseHint:'تُعرض الإجماليات بهذه العملة. تغييرها يحوّل الأسعار وأسعار الصرف تلقائياً.',
+rates:'أسعار الصرف',rateHint:'قيمة وحدة واحدة بالعملة الأساسية. أدخلها بنفسك، لا يتم جلبها من الإنترنت.',rateMissing:'سعر الصرف مفقود لـ',categories:'الفئات',addCat:'إضافة فئة',catName:'اسم الفئة',
+data:'بياناتك',exportCsv:'تصدير المعاملات (CSV)',exportMetals:'تصدير الذهب والفضة (CSV)',backup:'نسخة احتياطية (JSON)',backupWarn:'ملفات النسخ الاحتياطي غير مشفّرة.',restore:'استعادة نسخة احتياطية',reset:'مسح كل البيانات',
+confirmDel:'حذف هذا العنصر؟',confirmRestore:'استبدال كل بيانات هذا المستخدم بالنسخة الاحتياطية؟',confirmReset:'مسح كل بيانات هذا المستخدم؟ لا يمكن التراجع.',needAcc:'أنشئ حساباً أولاً.',accHasTx:'هذا الحساب مستخدم في سجلات أخرى. احذفها أولاً.',
+uncategorized:'بدون فئة',invalid:'ملف غير صالح.',localNote:'كل البيانات محفوظة على هذا الجهاز فقط. أنشئ نسخاً احتياطية بانتظام.',sameAcc:'اختر حسابين مختلفين.',badAmount:'أدخل مبلغاً أكبر من الصفر.',noCats:'لا توجد مصروفات هذا الشهر.',
+appearance:'المظهر',mode:'النمط',themeLight:'فاتح',themeBlack:'أسود',color:'اللون',hueHint:'اسحب حول العجلة لاختيار أي لون. يلوّن الأزرار والعناصر المميزة.',intensity:'شدة اللون',resetColor:'إعادة اللون',
+langHint:'تغيير اللغة يعيد تشغيل التطبيق.',restarting:'جارٍ إعادة التشغيل…',accountTrend:'أرصدة الحسابات، آخر 6 أشهر',incExp:'الدخل والمصروفات، آخر 6 أشهر',noData:'أضف معاملات لعرض هذا الرسم.',other:'أخرى',
+gold:'ذهب',silver:'فضة',metal:'المعدن',purity:'العيار / النقاء',custom:'مخصص',customPurity:'النقاء (من 0 إلى 1، مثل 0.875)',weightG:'الوزن (غرام)',costPerG:'التكلفة لكل غرام',pureWeight:'الوزن الصافي',
+buy:'شراء',sell:'بيع',buySell:'شراء / بيع',newMetalTx:'معاملة ذهب / فضة',editMetalTx:'تعديل معاملة الذهب / الفضة',paid:'المبلغ المدفوع',remaining:'التكلفة المتبقية',realized:'الربح المحقق',unrealized:'الربح / الخسارة على المقتنيات',byKarat:'حسب العيار',
+prices:'الأسعار الحالية',priceHint:'أدخل سعر اليوم بنفسك. يُستخدم لحساب القيمة الحالية والربح أو الخسارة.',goldPrice:'ذهب عيار 24، سعر الغرام',silverPrice:'فضة صافية، سعر الغرام',value:'القيمة الحالية',weight:'الوزن',cost:'التكلفة',avgCost:'متوسط التكلفة لكل غرام صافي',noPrice:'أدخل سعر اليوم لعرض القيمة.',
+converter:'محوّل عيار الذهب',converterHint:'ذهب صافي (عيار 24) ÷ النقاء = وزن الذهب بالعيار الأقل الذي يحتوي نفس كمية الذهب.',pureGold:'ذهب صافي عيار 24 (غرام)',equals:'ذهبك يعادل',reverse:'من العيار إلى الذهب الصافي',reverseHint:'الوزن × العيار ÷ 24 = الذهب الصافي بداخله.',gramsIn:'الوزن (غرام)',karat:'العيار',
+addPerson:'إضافة شخص',editPerson:'تعديل الشخص',personName:'الاسم',owedToMe:'مستحق لي',iOwe:'عليّ',owesYou:'عليه لك',youOwe:'عليك له',settled:'مُسوّى',ofCash:'من النقد',signedIn:'مسجّل الدخول · الحالي',signedInShort:'مسجّل الدخول',needPass:'تتطلب كلمة مرور',tapSwitch:'اضغط للتبديل',signOutAll:'تسجيل خروج الجميع',bankAcc:'حساب بنكي',cashAcc:'نقد في اليد',bankShort:'بنك',handShort:'نقد',accType:'نوع الحساب',today:'اليوم',clear:'مسح',localNote:'بياناتك تبقى على هذا الكمبيوتر.',entriesN:'قيد',vsLast:'عن الشهر الماضي',noPeople:'لا يوجد أشخاص بعد. أضف من تقرضه أو تقترض منه.',newEntry:'قيد جديد',editEntry:'تعديل القيد',kind:'النوع',
+lent:'أقرضتُ',theyPaid:'سدّد لي',borrowed:'اقترضتُ',iPaid:'سدّدتُ له',unit:'العملة أو المعدن',optAccount:'الحساب (اختياري)',noAccount:'بدون حساب',noEntries:'لا توجد قيود بعد.',balance:'الرصيد',back:'رجوع',deletePerson:'حذف الشخص',confirmDelPerson:'حذف هذا الشخص وكل قيوده؟',cash:'النقد',missingPrice:'أدخل أسعار الذهب والفضة لاحتسابها.',
+whoUses:'من يستخدم MATRIX؟',createProfile:'أنشئ ملفك الشخصي',welcome:'أنشئ مستخدماً للبدء. لكل مستخدم حسابات وأشخاص وذهب وفضة منفصلة.',yourName:'اسمك',passwordOpt:'كلمة المرور (اختياري)',confirmPass:'تأكيد كلمة المرور',create:'إنشاء المستخدم',addUser:'إضافة مستخدم',unlock:'فتح',wrongPass:'كلمة المرور خاطئة.',passShort:'استخدم 4 أحرف على الأقل.',passMismatch:'كلمتا المرور غير متطابقتين.',
+forgot:'نسيت كلمة المرور؟ احذف هذا المستخدم',confirmEraseUser:'حذف هذا المستخدم وكل بياناته؟ لا يمكن التراجع.',switchUser:'تبديل المستخدم',lockNow:'قفل الآن',profile:'الملف الشخصي',userName:'اسم المستخدم',security:'الأمان',setPass:'تعيين كلمة مرور',changePass:'تغيير كلمة المرور',removePass:'إزالة كلمة المرور',currentPass:'كلمة المرور الحالية',newPass:'كلمة المرور الجديدة',
+passOn:'هذا المستخدم مقفل بكلمة مرور.',passOff:'لا توجد كلمة مرور.',passWarn:'بياناتك مشفّرة بهذه الكلمة. إذا نسيتها فلا يمكن استرجاع البيانات.',deleteUser:'حذف هذا المستخدم',existingData:'ستُربط بياناتك الحالية بهذا المستخدم.',filterAll:'الكل',filterMoney:'المال',filterMetals:'الذهب والفضة',filterPeople:'الأشخاص',about:'صُنع بواسطة',pToday:'اليوم',pYest:'أمس',pWeek:'آخر 7 أيام',pMonth:'هذا الشهر',pLMonth:'الشهر الماضي',pYear:'هذه السنة',pLYear:'السنة الماضية',dFrom:'من تاريخ',dTo:'إلى تاريخ',clearDates:'مسح التواريخ',saved:'تم الحفظ'}
+};
+
+/* =====================================================================
+   Storage (IndexedDB) and encryption (AES-GCM, key from password)
+   ===================================================================== */
+let _db;
+const idb=()=>_db||(_db=new Promise((res,rej)=>{const r=indexedDB.open('ledger-db',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+async function kvGet(k){const db=await idb();return new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function kvPut(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+async function kvDel(k){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+
+const te=new TextEncoder(),td=new TextDecoder();
+async function deriveKey(pass,salt){
+  const base=await crypto.subtle.importKey('raw',te.encode(pass),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function sealState(st,key,salt){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const data=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,te.encode(JSON.stringify(st)));
+  return {enc:1,salt,iv,data};
+}
+async function openState(rec,key){
+  const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv:rec.iv},key,rec.data);
+  return JSON.parse(td.decode(buf));
+}
+
+/* =====================================================================
+   App state
+   ===================================================================== */
+let meta,state,session=null,screen='login',loginMode='pick',loginUser=null,loginLang='en',legacy=false;
+let view='dashboard',personId=null,filters={acc:'',q:'',kind:'all',from:'',to:''};
+const CUR3=['JOD','USD','EUR'];
+const KARATS=[24,22,21,18,14],SILVER=[0.999,0.925,0.8];
+const $=s=>document.querySelector(s);
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const L=()=>(session&&state)?state.settings.lang:loginLang;
+const t=k=>(I18N[L()]&&I18N[L()][k])||I18N.en[k]||k;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const r3=n=>Math.round(n*1000)/1000;
+const locale=()=>L()==='ar'?'ar-JO-u-nu-latn':'en-US';
+const fmtNum=(n,d=3)=>new Intl.NumberFormat(locale(),{maximumFractionDigits:d}).format(n);
+const compact=n=>new Intl.NumberFormat(locale(),{notation:'compact',maximumFractionDigits:1}).format(n);
+const hashHue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
+const initial=s=>(String(s||'?').trim()[0]||'?').toUpperCase();
+const avatar=(name,hue,cls='')=>`<span class="av ${cls}" style="--ah:${hue}">${esc(initial(name))}</span>`;
+
+function defaultState(lang,look){
+  const ar=lang==='ar';
+  return {v:3,
+    settings:{lang:ar?'ar':'en',mode:(look&&look.mode)||'light',hue:look&&look.hue!=null?look.hue:265,k:look&&look.k!=null?look.k:0.7,base:'JOD',rates:{USD:0.709,EUR:0.83},metalPrices:{gold:0,silver:0}},
+    accounts:[{id:uid(),name:ar?'نقدي':'Cash',currency:'JOD',opening:0,kind:'cash'}],
+    categories:[
+      {id:'food',en:'Food',ar:'طعام'},{id:'transport',en:'Transport',ar:'مواصلات'},
+      {id:'bills',en:'Bills',ar:'فواتير'},{id:'shopping',en:'Shopping',ar:'تسوق'},
+      {id:'health',en:'Health',ar:'صحة'},{id:'fun',en:'Entertainment',ar:'ترفيه'},
+      {id:'salary',en:'Salary',ar:'راتب'},{id:'other',en:'Other',ar:'أخرى'}],
+    txs:[],metalTx:[],people:[],debts:[]};
+}
+function migrate(s){
+  s.settings=s.settings||{};
+  const st=s.settings;
+  st.lang=st.lang==='ar'?'ar':'en';
+  if(!st.mode)st.mode=st.theme==='dark'?'dark':'light';
+  delete st.theme;
+  if(st.hue==null)st.hue=265;
+  if(st.k==null)st.k=0.7;
+  if(!CUR3.includes(st.base))st.base='JOD';
+  st.rates=st.rates||{};
+  if(st.base==='JOD'){if(!(st.rates.USD>0))st.rates.USD=0.709;if(!(st.rates.EUR>0))st.rates.EUR=0.83}
+  delete st.rates[st.base];
+  st.metalPrices=st.metalPrices||{gold:0,silver:0};
+  s.accounts=s.accounts||[];
+  for(const a of s.accounts)if(a.kind!=='bank'&&a.kind!=='cash')a.kind=/^(cash|نقد)/i.test(a.name||'')?'cash':'bank';
+  s.txs=s.txs||[];s.metalTx=s.metalTx||[];s.people=s.people||[];s.debts=s.debts||[];
+  if(Array.isArray(s.metals)){ // older versions kept simple purchases
+    for(const h of s.metals)s.metalTx.push({id:h.id,date:h.date,metal:h.metal,kind:'buy',purity:h.purity,grams:h.grams,amount:h.cost,currency:CUR3.includes(h.currency)?h.currency:st.base,accountId:'',note:h.note||''});
+    delete s.metals;
+  }
+  if(!s.categories||!s.categories.length)s.categories=defaultState('en').categories;
+  return s;
+}
+
+/* ---------- look: mode + hue wheel ---------- */
+function hslToRgb(h,s,l){
+  h=((h%360)+360)%360;const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+  const [r,g,b]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+  return [r+m,g+m,b+m];
+}
+function textOn(rgb){
+  const lin=v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+  const lum=0.2126*lin(rgb[0])+0.7152*lin(rgb[1])+0.0722*lin(rgb[2]);
+  return 1.05/(lum+0.05)>=(lum+0.05)/0.05?'#ffffff':'#0b0b10';
+}
+function lookSettings(){
+  if(session&&state)return state.settings;
+  try{return JSON.parse(localStorage.getItem('ledger-look')||'{}')}catch(_){return {}}
+}
+function applyLook(){
+  const s=lookSettings(),mode=s.mode==='dark'?'dark':'light';
+  const hue=Number.isFinite(+s.hue)?+s.hue:265,k=s.k!=null&&Number.isFinite(+s.k)?+s.k:0.7;
+  const r=document.documentElement;
+  try{window.ledgerApp&&window.ledgerApp.overlay&&window.ledgerApp.overlay(mode)}catch(_){}
+  r.dataset.theme=mode;r.style.setProperty('--h',hue);r.style.setProperty('--k',k);
+  r.style.setProperty('--accent-text',textOn(hslToRgb(hue,(30+k*55)/100,(mode==='dark'?62:50)/100)));
+  if(session&&state){
+    try{localStorage.setItem('ledger-look',JSON.stringify({mode,hue,k}));localStorage.setItem('ledger-lang',state.settings.lang)}catch(_){}
+    if(session.user&&session.user.hue!==hue){session.user.hue=hue}
+  }
+}
+const sizeHueKnob=()=>{
+  const kn=$('#knob');if(!kn)return;
+  const h=(+state.settings.hue||0)*Math.PI/180;
+  kn.style.left=(50+42.5*Math.sin(h))+'%';kn.style.top=(50-42.5*Math.cos(h))+'%';
+  const n=$('#hueNum');if(n)n.textContent=Math.round(state.settings.hue)+'°';
+};
+
+/* ---------- money helpers ---------- */
+const catName=id=>{const c=state.categories.find(x=>x.id===id);return c?(c[L()]||c.en):t('uncategorized')};
+const acc=id=>state.accounts.find(a=>a.id===id);
+const person=id=>state.people.find(p=>p.id===id);
+function fmt(n,cur){
+  try{return new Intl.NumberFormat(locale(),{style:'currency',currency:cur}).format(n)}
+  catch(e){return fmtNum(n,2)+' '+cur}
+}
+const money=(n,cur)=>`<bdi dir="ltr">${esc(fmt(n,cur))}</bdi>`;
+function rateOf(cur){const b=state.settings.base;if(cur===b)return 1;const r=state.settings.rates[cur];return r>0?r:null}
+function toBase(n,cur){const r=rateOf(cur);return r==null?0:n*r}
+function purLabel(metal,p){
+  if(metal==='gold'){const k=p*24;return Math.abs(k-Math.round(k))<1e-6?Math.round(k)+'K':String(p)}
+  return String(Math.round(p*1000));
+}
+function fmtUnit(amount,unit,purity){
+  if(unit==='gold'||unit==='silver')return L()==='ar'
+    ?`<bdi>${esc(t(unit))} <bdi dir="ltr">${esc(purLabel(unit,purity))}</bdi> · <bdi dir="ltr">${esc(fmtNum(amount))} g</bdi></bdi>`
+    :`<bdi dir="ltr">${esc(fmtNum(amount))} g ${esc(t(unit))} ${esc(purLabel(unit,purity))}</bdi>`;
+  return money(amount,unit);
+}
+function unitBase(unit,purity,amount){
+  if(unit==='gold'||unit==='silver'){const p=+state.settings.metalPrices[unit];return p>0?amount*purity*p:null}
+  return toBase(amount,unit);
+}
+const OUT_KINDS={lent:1,iPaid:1};
+function balanceAt(a,end){
+  let b=+a.opening||0;
+  for(const x of state.txs){
+    if(x.date>end)continue;
+    if(x.type==='income'&&x.accountId===a.id)b+=x.amount;
+    else if(x.type==='expense'&&x.accountId===a.id)b-=x.amount;
+    else if(x.type==='transfer'){if(x.accountId===a.id)b-=x.amount;if(x.toAccountId===a.id)b+=(x.toAmount??x.amount)}
+  }
+  for(const x of state.metalTx){if(x.accountId===a.id&&x.date<=end)b+=x.kind==='buy'?-x.amount:x.amount}
+  for(const d of state.debts){if(d.accountId===a.id&&d.date<=end)b+=OUT_KINDS[d.kind]?-d.amount:d.amount}
+  return r3(b);
+}
+const balance=a=>balanceAt(a,'9999-12-31');
+function missingRates(){const s=new Set();state.accounts.forEach(a=>{if(rateOf(a.currency)==null)s.add(a.currency)});state.metalTx.forEach(x=>{if(rateOf(x.currency)==null)s.add(x.currency)});return [...s]}
+function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function changeBase(nb){
+  const s=state.settings,ob=s.base;if(nb===ob||!CUR3.includes(nb))return;
+  const r=s.rates[nb]; // 1 nb = r ob
+  if(r>0){
+    const nr={};
+    for(const c of CUR3){if(c===nb)continue;const rc=c===ob?1:s.rates[c];if(rc>0)nr[c]=rc/r}
+    s.rates=nr;
+    s.metalPrices.gold=(+s.metalPrices.gold||0)/r;s.metalPrices.silver=(+s.metalPrices.silver||0)/r;
+  }else{delete s.rates[nb]}
+  s.base=nb;
+}
+
+/* ---------- people (money owed) ---------- */
+const DSIGN={lent:1,theyPaid:-1,borrowed:-1,iPaid:1}; // + means "they owe me more"
+const debtKey=d=>(d.unit==='gold'||d.unit==='silver')?d.unit+':'+d.purity:d.unit;
+function personBalances(pid){
+  const m={};
+  for(const d of state.debts){
+    if(d.personId!==pid)continue;
+    const k=debtKey(d);
+    (m[k]=m[k]||{unit:d.unit,purity:d.purity,amount:0}).amount+=DSIGN[d.kind]*d.amount;
+  }
+  return Object.values(m).map(b=>({...b,amount:r3(b.amount)})).filter(b=>Math.abs(b.amount)>1e-9);
+}
+function debtTotals(){
+  let owed=0,owe=0,missing=0;
+  for(const p of state.people)for(const b of personBalances(p.id)){
+    const v=unitBase(b.unit,b.purity,Math.abs(b.amount));
+    if(v==null){missing++;continue}
+    if(b.amount>0)owed+=v;else owe+=v;
+  }
+  return {owed,owe,missing};
+}
+
+/* ---------- metals ---------- */
+function metalStats(m){
+  const list=state.metalTx.filter(x=>x.metal===m).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+  let grams=0,pure=0,cost=0,realized=0;const lots={};
+  for(const x of list){
+    const p=x.grams*x.purity,amt=toBase(x.amount,x.currency);
+    if(x.kind==='buy'){grams+=x.grams;pure+=p;cost+=amt;lots[x.purity]=(lots[x.purity]||0)+x.grams}
+    else{
+      const sp=Math.min(p,pure),avg=pure>0?cost/pure:0,basis=sp*avg;
+      realized+=amt-basis;cost-=basis;pure-=sp;grams=Math.max(0,grams-x.grams);
+      lots[x.purity]=Math.max(0,(lots[x.purity]||0)-x.grams);
+    }
+  }
+  pure=Math.max(0,pure);cost=Math.max(0,cost);
+  const price=+state.settings.metalPrices[m]||0;
+  return {grams,pure,cost,realized,price,value:price>0?pure*price:null,lots};
+}
+const eqRow=(pure,p,k)=>`<div class="eq"><span class="f"><bdi dir="ltr">${fmtNum(pure,4)} ÷ ${p.toFixed(3)}</bdi></span><span><bdi dir="ltr"><b>${fmtNum(pure/p,4)}</b> g <em>${k}</em></bdi></span></div>`;
+function convHTML(pure,cp){
+  let h=[22,21,18,14].map(k=>eqRow(pure,k/24,k+'K')).join('');
+  if(cp>0&&cp<=1)h+=eqRow(pure,cp,String(cp));
+  return h;
+}
+const revHTML=(g,k)=>`<div class="eq"><span class="f"><bdi dir="ltr">${fmtNum(g,4)} × ${k} ÷ 24</bdi></span><span><b><bdi dir="ltr">${fmtNum(g*k/24,4)}</bdi></b> g <em>24K</em></span></div>`;
+
+/* =====================================================================
+   Icons
+   ===================================================================== */
+const ICONS={
+ home:'<path d="M3 11l9-8 9 8"/><path d="M5 9.5V20h14V9.5"/>',
+ list:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+ bank:'<path d="M3 9.5L12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>',
+ coins:'<circle cx="9" cy="9" r="6"/><path d="M15.2 9.3A6 6 0 1 1 9.3 15.2"/>',
+ users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 1.9 4.5 4.5"/>',
+ sliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ up:'<path d="M12 19V5M5 12l7-7 7 7"/>',
+ down:'<path d="M12 5v14M19 12l-7 7-7-7"/>',
+ swap:'<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>',
+ book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ chev:'<path d="M9 6l6 6-6 6"/>',
+ arrowIn:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ cash:'<rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.6v.01M17.5 14.4v.01"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ shield:'<path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/>',
+ moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'
+};
+const LOGO=`<i class="mark logo"><svg viewBox="300 300 480 480" aria-hidden="true"><path d="M320 360H480L540 434L600 360H760V720H600V540L540 609L480 540V720H320Z" fill="currentColor"/></svg></i>`;
+const ic=(n,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
+/* =====================================================================
+   Charts
+   ===================================================================== */
+function chartMonths(n){
+  const out=[],d=new Date();
+  for(let i=n-1;i>=0;i--){
+    const x=new Date(d.getFullYear(),d.getMonth()-i,1);
+    out.push({key:x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'),label:new Intl.DateTimeFormat(locale(),{month:'short'}).format(x)});
+  }
+  return out;
+}
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=5?5:10)*p}
+function barChart(stats,base){
+  const W=620,H=240,pl=48,pr=8,pt=12,pb=30,pw=W-pl-pr,ph=H-pt-pb;
+  const max=niceMax(Math.max(1e-9,...stats.map(s=>Math.max(s.inc,s.exp))));
+  let g='';
+  for(let i=0;i<=4;i++){const y=pt+ph-ph*i/4;g+=`<line class="grid-l" x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}"/><text x="${pl-8}" y="${y+4}" text-anchor="end">${esc(compact(max*i/4))}</text>`}
+  const gw=pw/stats.length,bw=Math.min(24,gw*.3);
+  const bar=(x,v,color)=>{
+    const h=v/max*ph;if(h<=0.5)return '';
+    const y=pt+ph-h,r=Math.min(4,h,bw/2);
+    return `<path class="bar" d="M${x},${y+h}L${x},${y+r}Q${x},${y} ${x+r},${y}L${x+bw-r},${y}Q${x+bw},${y} ${x+bw},${y+r}L${x+bw},${y+h}Z" fill="${color}"/>`;
+  };
+  stats.forEach((s,i)=>{
+    const cx=pl+gw*i+gw/2;
+    g+=bar(cx-bw-1,s.inc,'var(--s1)')+bar(cx+1,s.exp,'var(--s2)');
+    g+=`<text x="${cx}" y="${H-9}" text-anchor="middle">${esc(s.label)}</text>`;
+    g+=`<rect x="${pl+gw*i}" y="${pt}" width="${gw}" height="${ph}" fill="transparent" data-tip="${esc(s.label+'\n'+t('income')+': '+fmt(s.inc,base)+'\n'+t('expense')+': '+fmt(s.exp,base))}"/>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t('incExp'))}">${g}</svg>`;
+}
+function lineChart(months,vals,base){
+  const W=620,H=240,pl=48,pr=38,pt=14,pb=30,pw=W-pl-pr,ph=H-pt-pb;
+  let lo=Math.min(...vals),hi=Math.max(...vals);
+  if(hi-lo<1e-9){const d=Math.abs(hi)*.1||1;lo-=d;hi+=d}else{const d=(hi-lo)*.18;lo-=d;hi+=d}
+  const X=i=>pl+pw*i/(vals.length-1),Y=v=>pt+ph-(v-lo)/(hi-lo)*ph;
+  let g='';
+  for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,y=Y(v);g+=`<line class="grid-l" x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}"/><text x="${pl-8}" y="${y+4}" text-anchor="end">${esc(compact(v))}</text>`}
+  const pts=vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`);
+  g+=`<path d="M${pts.join('L')}L${X(vals.length-1)},${pt+ph}L${X(0)},${pt+ph}Z" fill="var(--accent)" opacity=".13"/>`;
+  g+=`<path d="M${pts.join('L')}" pathLength="1" class="draw" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  vals.forEach((v,i)=>{
+    g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+    g+=`<text x="${X(i)}" y="${H-9}" text-anchor="middle">${esc(months[i].label)}</text>`;
+    g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="16" fill="transparent" data-tip="${esc(months[i].label+'\n'+fmt(v,base))}"/>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t('accountTrend'))}">${g}</svg>`;
+}
+function donut(items,total,base){
+  const R=70,C=2*Math.PI*R;let off=0;
+  const segs=items.map(it=>{
+    const len=it.v/total*C,gap=items.length>1?2.5:0,d=Math.max(0,len-gap);
+    const s=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${it.color}" stroke-width="26" stroke-dasharray="${d} ${C-d}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" data-tip="${esc(it.name+'\n'+fmt(it.v,base)+' · '+Math.round(it.v/total*100)+'%')}"/>`;
+    off+=len;return s;
+  }).join('');
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(t('byCategory'))}">${segs}<text class="dc1" x="100" y="97" text-anchor="middle">${esc(compact(total))}</text><text class="dc2" x="100" y="117" text-anchor="middle">${esc(base)}</text></svg>`;
+}
+
+/* =====================================================================
+   Activity feed
+   ===================================================================== */
+const subline=(date,parts)=>`<span class="dd">${esc(date)}</span>${parts.filter(Boolean).map((p,i)=>`<span${i?'':' class="dd"'}> · </span>${p}`).join('')}`;
+function txRow(x){
+  const a=acc(x.accountId),cur=a?a.currency:'';
+  let title,sub,amt,icon,cls='';
+  if(x.type==='transfer'){
+    const b=acc(x.toAccountId);
+    title=`${esc(a?a.name:'?')} → ${esc(b?b.name:'?')}`;sub=esc(x.note||'');amt=money(x.amount,cur);icon='swap';
+  }else{
+    title=esc(x.note||catName(x.categoryId));sub=esc(catName(x.categoryId))+' · '+esc(a?a.name:'');
+    cls=x.type==='income'?'pos':'neg';icon=x.type==='income'?'up':'down';
+    amt=(x.type==='income'?'+ ':'− ')+money(x.amount,cur);
+  }
+  return `<div class="row" data-tx="${x.id}"><div class="badge ${cls}">${ic(icon,18)}</div><div class="mid"><div class="t">${title}</div><div class="muted small">${subline(x.date,[sub])}</div></div><div class="amt ${cls}">${amt}</div></div>`;
+}
+function metalRow(x){
+  const buy=x.kind==='buy',a=acc(x.accountId);
+  return `<div class="row" data-mtx="${x.id}"><div class="badge"><span class="dot ${x.metal}"></span></div><div class="mid"><div class="t">${t(buy?'buy':'sell')} ${t(x.metal)} ${esc(purLabel(x.metal,x.purity))} · <bdi dir="ltr">${fmtNum(x.grams)} g</bdi></div><div class="muted small">${subline(x.date,[a?esc(a.name):'',x.note?esc(x.note):''])}</div></div><div class="amt ${buy?'neg':'pos'}">${buy?'− ':'+ '}${money(x.amount,x.currency)}</div></div>`;
+}
+function debtRow(x,showName=true){
+  const p=person(x.personId),out=OUT_KINDS[x.kind],a=acc(x.accountId);
+  return `<div class="row" data-dbt="${x.id}">${p?avatar(p.name,hashHue(p.name)):`<div class="badge">${ic('users',18)}</div>`}<div class="mid"><div class="t">${showName?esc(p?p.name:'?')+' · ':''}${t(x.kind)}</div><div class="muted small">${subline(x.date,[a?esc(a.name):'',x.note?esc(x.note):''])}</div></div><div class="amt ${out?'neg':'pos'}">${out?'− ':'+ '}${fmtUnit(x.amount,x.unit,x.purity)}</div></div>`;
+}
+function grouped(rows){let last='',h='';for(const it of rows){if(it.date!==last){last=it.date;h+=`<div class="dg">${esc(dayLabel(it.date))}</div>`}h+=feedRow(it)}return h}
+function feed(){
+  const items=[];
+  for(const x of state.txs)items.push({k:'tx',id:x.id,date:x.date,x});
+  for(const x of state.metalTx)items.push({k:'metal',id:x.id,date:x.date,x});
+  for(const x of state.debts)items.push({k:'debt',id:x.id,date:x.date,x});
+  return items.sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+}
+function dayLabel(d){
+  const dt=new Date(d+'T12:00:00'),diff=Math.round((new Date(today()+'T12:00:00')-dt)/864e5);
+  if(diff===0||diff===1){const r=new Intl.RelativeTimeFormat(locale(),{numeric:'auto'}).format(-diff,'day');return r.charAt(0).toUpperCase()+r.slice(1)}
+  return new Intl.DateTimeFormat(locale(),{weekday:'long',day:'numeric',month:'long',year:dt.getFullYear()!==new Date().getFullYear()?'numeric':undefined}).format(dt);
+}
+const feedRow=it=>it.k==='tx'?txRow(it.x):it.k==='metal'?metalRow(it.x):debtRow(it.x);
+
+/* =====================================================================
+   Views
+   ===================================================================== */
+const PRESETS=[['today','pToday'],['yest','pYest'],['week','pWeek'],['month','pMonth'],['lmonth','pLMonth'],['year','pYear'],['lyear','pLYear']];
+function presetRange(k){
+  const n=new Date(),y=n.getFullYear(),m=n.getMonth(),D=(a,b,c)=>new Date(a,b,c);
+  switch(k){
+    case 'today':return [ymd(n),ymd(n)];
+    case 'yest':{const d=D(y,m,n.getDate()-1);return [ymd(d),ymd(d)]}
+    case 'week':return [ymd(D(y,m,n.getDate()-6)),ymd(n)];
+    case 'month':return [ymd(D(y,m,1)),ymd(D(y,m+1,0))];
+    case 'lmonth':return [ymd(D(y,m-1,1)),ymd(D(y,m,0))];
+    case 'year':return [y+'-01-01',y+'-12-31'];
+    case 'lyear':return [(y-1)+'-01-01',(y-1)+'-12-31'];
+  }
+}
+const header=(title,actions)=>`<div class="ph"><h1>${title}</h1><div class="acts">${actions||''}</div></div>`;
+const newTxBtn=()=>`<button class="btn p" data-act="newtx">${ic('plus',18)} ${t('newTx')}</button>`;
+
+const views={
+dashboard(){
+  const base=state.settings.base,mk=today().slice(0,7),months=chartMonths(6);
+  const stats=months.map(m=>({...m,inc:0,exp:0})),byKey=Object.fromEntries(stats.map(s=>[s.key,s]));
+  const cats={};
+  for(const x of state.txs){
+    if(x.type==='transfer')continue;
+    const a=acc(x.accountId);if(!a)continue;
+    const k=x.date.slice(0,7),v=toBase(x.amount,a.currency),s=byKey[k];
+    if(s){if(x.type==='income')s.inc+=v;else s.exp+=v}
+    if(k===mk&&x.type==='expense')cats[x.categoryId||'']=(cats[x.categoryId||'']||0)+v;
+  }
+  const cur=byKey[mk];
+  const cash=state.accounts.reduce((s,a)=>s+toBase(balance(a),a.currency),0);
+  const inHand=state.accounts.filter(a=>a.kind==='cash').reduce((s,a)=>s+toBase(balance(a),a.currency),0),inBank=cash-inHand;
+  const trend=months.map(m=>state.accounts.reduce((s,a)=>s+toBase(balanceAt(a,m.key+'-31'),a.currency),0));
+  const g=metalStats('gold'),s=metalStats('silver'),dt=debtTotals();
+  const metalsVal=(g.value??g.cost)+(s.value??s.cost);
+  const net=cash+metalsVal+dt.owed-dt.owe;
+  const miss=missingRates();
+  const dCash=trend[trend.length-1]-trend[trend.length-2],dPct=Math.abs(trend[trend.length-2])>1e-9?dCash/Math.abs(trend[trend.length-2])*100:null;
+  const delta=Math.abs(dCash)>1e-9?`<div class="delta">${dCash>=0?'▲':'▼'} ${money(Math.abs(dCash),base)}${dPct!=null?` <bdi dir="ltr">(${dPct>=0?'+':'−'}${Math.abs(dPct).toFixed(1)}%)</bdi>`:''} · ${t('vsLast')}</div>`:'';
+  const catList=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const top=catList.slice(0,5).map(([id,v],i)=>({name:catName(id),v,color:`var(--s${i+1})`}));
+  const rest=catList.slice(5).reduce((a,[,v])=>a+v,0);
+  if(rest>0)top.push({name:t('other'),v:rest,color:'var(--s6)'});
+  const catTotal=top.reduce((a,x)=>a+x.v,0);
+  const hasTx=state.txs.some(x=>x.type!=='transfer');
+  return header(t('dashboard'),newTxBtn())+`<div class="grid">
+  <section class="card hero s6"><div class="muted">${t('netWorth')}</div><div class="num">${money(net,base)}</div>${delta}${miss.length?`<div class="warn">${t('rateMissing')} ${esc(miss.join(', '))}</div>`:''}
+    <div class="hbreak"><div><span class="muted small">${t('bankShort')}</span><b>${money(inBank,base)}</b></div><div><span class="muted small">${t('handShort')}</span><b>${money(inHand,base)}</b></div><div><span class="muted small">${t('metals')}</span><b>${money(metalsVal,base)}</b></div><div><span class="muted small">${t('owedToMe')}</span><b>${money(dt.owed,base)}</b></div><div><span class="muted small">${t('iOwe')}</span><b>${money(dt.owe,base)}</b></div></div></section>
+  <section class="card stat s3"><div class="badge pos">${ic('up',18)}</div><div><div class="muted small">${t('income')} · ${t('thisMonth')}</div><div class="num">${money(cur.inc,base)}</div></div></section>
+  <section class="card stat s3"><div class="badge neg">${ic('down',18)}</div><div><div class="muted small">${t('expense')} · ${t('thisMonth')}</div><div class="num">${money(cur.exp,base)}</div></div></section>
+  <section class="card stat s3" data-view="people" style="cursor:pointer"><div class="badge pos">${ic('users',18)}</div><div><div class="muted small">${t('owedToMe')}</div><div class="num">${money(dt.owed,base)}</div></div></section>
+  <section class="card stat s3" data-view="people" style="cursor:pointer"><div class="badge neg">${ic('users',18)}</div><div><div class="muted small">${t('iOwe')}</div><div class="num">${money(dt.owe,base)}</div></div></section>
+  <section class="card s7"><h2>${t('accountTrend')}</h2>${state.accounts.length?lineChart(months,trend,base):`<div class="empty">${t('noAcc')}</div>`}</section>
+  <section class="card s5"><h2>${t('byCategory')}</h2>${catTotal>0?`<div class="donutwrap">${donut(top,catTotal,base)}<div class="dl">${top.map(x=>`<div><i style="background:${x.color}"></i><span class="n">${esc(x.name)}</span><span>${Math.round(x.v/catTotal*100)}%</span></div>`).join('')}</div></div>`:`<div class="empty">${t('noCats')}</div>`}</section>
+  <section class="card s7"><h2>${t('incExp')}</h2>${hasTx?`<div class="legend"><span><i style="background:var(--s1)"></i>${t('income')}</span><span><i style="background:var(--s2)"></i>${t('expense')}</span></div>${barChart(stats,base)}`:`<div class="empty">${t('noData')}</div>`}</section>
+  <section class="card s5"><h2>${t('accounts')}</h2>${state.accounts.map(a=>`<div class="row" data-accedit="${a.id}"><div class="mid"><div class="t">${esc(a.name)}</div><div class="muted small">${esc(a.currency)} · ${t(a.kind==='cash'?'handShort':'bankShort')}</div></div><div class="amt">${money(balance(a),a.currency)}</div></div>`).join('')||`<div class="empty">${t('noAcc')}</div>`}</section>
+  <section class="card s12"><h2>${t('recent')}</h2>${feed().slice(0,6).map(feedRow).join('')||`<div class="empty">${t('noTx')}</div>`}</section></div>`;
+},
+transactions(){
+  const q=filters.q.trim().toLowerCase();
+  const kinds={all:null,money:'tx',metals:'metal',people:'debt'};
+  const rows=feed().filter(it=>{
+    if(kinds[filters.kind]&&it.k!==kinds[filters.kind])return false;
+    const x=it.x;
+    if(filters.acc&&!(x.accountId===filters.acc||x.toAccountId===filters.acc))return false;
+    if(filters.from&&it.date<filters.from)return false;
+    if(filters.to&&it.date>filters.to)return false;
+    if(q){
+      const hay=((x.note||'')+' '+(it.k==='tx'?catName(x.categoryId):'')+' '+(it.k==='debt'?(person(x.personId)||{}).name||'':'')+' '+(it.k==='metal'?t(x.metal):'')+' '+it.date).toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    return true;
+  });
+  return header(t('transactions'),newTxBtn())+`
+  <div class="filters"><div class="seg">${[['all','filterAll'],['money','filterMoney'],['metals','filterMetals'],['people','filterPeople']].map(([k,l])=>`<button data-fkind="${k}" class="${filters.kind===k?'on':''}">${t(l)}</button>`).join('')}</div>
+  <select id="fAcc" style="max-width:220px"><option value="">${t('allAcc')}</option>${state.accounts.map(a=>`<option value="${a.id}" ${filters.acc===a.id?'selected':''}>${esc(a.name)}</option>`).join('')}</select>
+  <input id="fQ" type="search" placeholder="${esc(t('search'))}" value="${esc(filters.q)}" style="max-width:260px"></div>
+  <div class="filters dfil"><div class="pres">${PRESETS.map(([k,l])=>{const r=presetRange(k),on=filters.from===r[0]&&filters.to===r[1];return `<button class="pre ${on?'on':''}" data-fpre="${k}">${t(l)}</button>`}).join('')}</div>
+  <div class="drange"><input type="date" id="fFrom" value="${esc(filters.from)}" aria-label="${esc(t('dFrom'))}" title="${esc(t('dFrom'))}"><span class="muted">→</span><input type="date" id="fTo" value="${esc(filters.to)}" aria-label="${esc(t('dTo'))}" title="${esc(t('dTo'))}">${filters.from||filters.to?`<button class="btn" data-fclr="1">${t('clearDates')}</button>`:''}</div></div>
+  <div class="card grp">${grouped(rows)||`<div class="empty">${t('noTx')}</div>`}</div>`;
+},
+accounts(){
+  const base=state.settings.base;
+  const info=state.accounts.map(a=>({a,b:balance(a),v:toBase(balance(a),a.currency)}));
+  const total=info.reduce((x,i)=>x+Math.max(i.v,0),0);
+  const cnt=id=>state.txs.filter(x=>x.accountId===id||x.toAccountId===id).length+state.metalTx.filter(x=>x.accountId===id).length+state.debts.filter(x=>x.accountId===id).length;
+  const add=`<button class="addtile" data-act="newacc">${ic('plus',22)}<span>${t('addAcc')}</span></button>`;
+  return header(t('accounts'),`<button class="btn p" data-act="newacc">${ic('plus',18)} ${t('addAcc')}</button>`)+
+  (state.accounts.length?`<div class="accs">${info.map(({a,b,v})=>{const pc=total>0?Math.max(0,Math.min(100,v/total*100)):0;return `<section class="card acc" data-accedit="${a.id}"><div class="acc-h"><div class="badge">${ic(a.kind==='cash'?'cash':'bank',18)}</div><div class="mid"><div class="t" style="font-weight:650">${esc(a.name)}</div><div class="muted small">${t(a.kind==='cash'?'cashAcc':'bankAcc')}<span class="cc">${esc(a.currency)}</span></div></div></div><div class="acc-n ${b<0?'neg':''}">${money(b,a.currency)}</div><div class="bar"><i style="width:${pc.toFixed(1)}%"></i></div><div class="muted small" style="display:flex;justify-content:space-between"><span><bdi dir="ltr">${Math.round(pc)}%</bdi> ${t('ofCash')}</span><span><bdi dir="ltr">${cnt(a.id)}</bdi> ${t('entriesN')}</span></div></section>`}).join('')}${add}</div>`:`<div class="card"><div class="empty">${t('noAcc')}</div></div>`);
+},
+people(){
+  const base=state.settings.base,dt=debtTotals();
+  const rows=state.people.map(p=>{
+    const bs=personBalances(p.id);
+    const chips=bs.length?bs.map(b=>`<span class="chip ${b.amount>0?'pos':'neg'}">${t(b.amount>0?'owesYou':'youOwe')} ${fmtUnit(Math.abs(b.amount),b.unit,b.purity)}</span>`).join(''):`<span class="muted small">${t('settled')}</span>`;
+    return `<div class="row" data-person="${p.id}">${avatar(p.name,hashHue(p.name))}<div class="mid"><div class="t">${esc(p.name)}</div><div>${chips}</div></div><span class="muted flip">${ic('chev',18)}</span></div>`;
+  }).join('');
+  return header(t('people'),`<button class="btn p" data-act="newperson">${ic('plus',18)} ${t('addPerson')}</button>`)+`<div class="grid">
+  <section class="card stat s6"><div class="badge pos">${ic('users',18)}</div><div><div class="muted small">${t('owedToMe')}</div><div class="num" style="font-size:26px">${money(dt.owed,base)}</div></div></section>
+  <section class="card stat s6"><div class="badge neg">${ic('users',18)}</div><div><div class="muted small">${t('iOwe')}</div><div class="num" style="font-size:26px">${money(dt.owe,base)}</div></div></section>
+  ${dt.missing?`<div class="s12 muted small">${t('missingPrice')}</div>`:''}
+  <section class="card s12">${rows||`<div class="empty">${t('noPeople')}</div>`}</section></div>`;
+},
+person(){
+  const p=person(personId);
+  if(!p){view='people';return views.people()}
+  const bs=personBalances(p.id);
+  const entries=state.debts.filter(d=>d.personId===p.id).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  return `<div class="ph"><div style="display:flex;align-items:center;gap:14px"><button class="btn sm" data-view="people"><span class="bk">${ic('chev',16)}</span></button>${avatar(p.name,hashHue(p.name),'lg')}<div><h1 style="margin:0;font-size:24px;font-weight:650">${esc(p.name)}</h1><div class="muted">${esc(p.note||'')}</div></div></div>
+  <div class="acts"><button class="btn" data-editperson="${p.id}">${t('editPerson')}</button><button class="btn p" data-newentry="${p.id}">${ic('plus',18)} ${t('newEntry')}</button></div></div>
+  <div class="card" style="margin-bottom:16px"><div class="muted small" style="font-weight:600">${t('balance')}</div>${bs.length?`<div class="pbals">${bs.map(b=>`<div class="pb ${b.amount>0?'pos':'neg'}"><div class="pbl">${t(b.amount>0?'owesYou':'youOwe')}</div><div class="pbn">${fmtUnit(Math.abs(b.amount),b.unit,b.purity)}</div></div>`).join('')}</div>`:`<div class="pbn muted" style="font-size:24px;margin:10px 0">${t('settled')}</div>`}<div class="muted small"><bdi dir="ltr">${entries.length}</bdi> ${t('entriesN')}</div></div>
+  <div class="card">${entries.map(d=>debtRow(d,false)).join('')||`<div class="empty">${t('noEntries')}</div>`}</div>`;
+},
+metals(){
+  const base=state.settings.base,P=state.settings.metalPrices;
+  const g=metalStats('gold'),s=metalStats('silver');
+  const summary=(name,key,m)=>{
+    const unreal=m.value!=null?m.value-m.cost:null,pct=unreal!=null&&m.cost>0?unreal/m.cost*100:null;
+    const lots=Object.entries(m.lots).filter(([,v])=>v>1e-9).sort((a,b)=>b[0]-a[0]);
+    const eq=key==='gold'&&m.pure>0?`<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><div class="muted small" style="margin-bottom:2px">${t('equals')}</div>${[21,18].map(k=>eqRow(m.pure,k/24,k+'K')).join('')}</div>`:'';
+    const pl=(v,withPct)=>v==null?'—':`<span class="${v>=0?'pos':'neg'}">${v>=0?'+ ':'− '}${money(Math.abs(v),base)}${withPct&&pct!=null?` <bdi dir="ltr">(${pct>=0?'+':'−'}${Math.abs(pct).toFixed(1)}%)</bdi>`:''}</span>`;
+    return `<section class="card s6"><h3><span class="dot ${key}"></span> ${name}</h3>
+    <div class="kv" style="margin-top:12px"><span class="muted">${t('weight')}</span><span><bdi dir="ltr">${fmtNum(m.grams)} g</bdi></span></div>
+    ${lots.length?`<div class="kv"><span class="muted">${t('byKarat')}</span><span>${lots.map(([p,v])=>`<span class="chip"><bdi dir="ltr">${esc(purLabel(key,+p))} · ${fmtNum(v)} g</bdi></span>`).join('')}</span></div>`:''}
+    <div class="kv"><span class="muted">${t('pureWeight')}</span><span><bdi dir="ltr">${fmtNum(m.pure)} g</bdi></span></div>
+    <div class="kv"><span class="muted">${t('remaining')}</span><span>${money(m.cost,base)}</span></div>
+    <div class="kv"><span class="muted">${t('avgCost')}</span><span>${m.pure>0?money(m.cost/m.pure,base):'—'}</span></div>
+    <div class="kv"><span class="muted">${t('value')}</span><span>${m.value!=null?money(m.value,base):`<span class="muted small">${t('noPrice')}</span>`}</span></div>
+    <div class="kv"><span class="muted">${t('unrealized')}</span><span>${pl(unreal,true)}</span></div>
+    <div class="kv"><span class="muted">${t('realized')}</span><span>${Math.abs(m.realized)>1e-9?pl(m.realized,false):'—'}</span></div>${eq}</section>`;
+  };
+  const defPure=g.pure>0?g.pure:1;
+  const rows=[...state.metalTx].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).map(metalRow).join('');
+  const hasP=(g.pure<=1e-9||g.value!=null)&&(s.pure<=1e-9||s.value!=null);
+  const mVal=(g.value??g.cost)+(s.value??s.cost),mCost=g.cost+s.cost,mPL=hasP?mVal-mCost:null;
+  return header(t('metals'),`<button class="btn p" data-act="newmetal">${ic('plus',18)} ${t('buySell')}</button>`)+`<div class="grid">
+  <section class="card stat s4"><div class="badge">${ic('coins',18)}</div><div><div class="muted small">${t('value')}</div><div class="num">${money(mVal,base)}</div></div></section>
+  <section class="card stat s4"><div class="badge">${ic('list',18)}</div><div><div class="muted small">${t('remaining')}</div><div class="num">${money(mCost,base)}</div></div></section>
+  <section class="card stat s4"><div class="badge ${mPL==null?'':mPL>=0?'pos':'neg'}">${ic(mPL!=null&&mPL<0?'down':'up',18)}</div><div><div class="muted small">${t('unrealized')}</div><div class="num ${mPL==null?'':mPL>=0?'pos':'neg'}">${mPL==null?'—':(mPL>=0?'+ ':'− ')+money(Math.abs(mPL),base)}</div></div></section>
+  <section class="card s12"><h2>${t('prices')}</h2><div class="pf">
+    <div><label style="margin-top:0">${t('goldPrice')} (${esc(base)})</label><input type="number" step="any" min="0" inputmode="decimal" data-price="gold" value="${P.gold?r3(P.gold):''}"></div>
+    <div><label style="margin-top:0">${t('silverPrice')} (${esc(base)})</label><input type="number" step="any" min="0" inputmode="decimal" data-price="silver" value="${P.silver?r3(P.silver):''}"></div></div>
+    <div class="muted small" style="margin-top:10px">${t('priceHint')}</div></section>
+  ${summary(t('gold'),'gold',g)}${summary(t('silver'),'silver',s)}
+  <section class="card s6"><h2>${t('converter')}</h2><div class="muted small" style="margin:-6px 0 8px">${t('converterHint')}</div>
+    <label style="margin-top:0">${t('pureGold')}</label><input id="cvIn" type="number" step="any" min="0" inputmode="decimal" value="${Math.round(defPure*10000)/10000}">
+    <div id="cvOut" style="margin-top:8px">${convHTML(defPure,0)}</div>
+    <label>${t('customPurity')}</label><input id="cvP" type="number" step="any" min="0" max="1" inputmode="decimal" placeholder="0.875"></section>
+  <section class="card s6"><h2>${t('reverse')}</h2><div class="muted small" style="margin:-6px 0 8px">${t('reverseHint')}</div>
+    <div class="f2"><div><label style="margin-top:0">${t('gramsIn')}</label><input id="rvIn" type="number" step="any" min="0" inputmode="decimal" value="1"></div>
+    <div><label style="margin-top:0">${t('karat')}</label><select id="rvK">${KARATS.slice(1).map(k=>`<option value="${k}" ${k===21?'selected':''}>${k}K</option>`).join('')}</select></div></div>
+    <div id="rvOut" style="margin-top:8px">${revHTML(1,21)}</div></section>
+  <section class="card s12"><h2>${t('buySell')}</h2>${rows||`<div class="empty">${t('noTx')}</div>`}</section></div>`;
+},
+settings(){
+  const S=state.settings,base=S.base,locked=!!session.user.locked;
+  const others=CUR3.filter(c=>c!==base);
+  return header(t('settings'))+`<div class="grid">
+  <section class="card s6"><h2>${t('profile')}</h2>
+    <label style="margin-top:0">${t('userName')}</label><input id="uName" value="${esc(session.user.name)}" maxlength="40">
+    <div class="btns" style="margin-top:14px"><button class="btn" data-act="switchPick">${ic('users',16)} ${t('switchUser')}</button><button class="btn d" data-act="deleteuser">${t('deleteUser')}</button></div></section>
+  <section class="card s6"><h2>${t('security')}</h2>
+    <div class="muted" style="margin-bottom:12px">${locked?t('passOn'):t('passOff')}</div>
+    <div class="btns">${locked?`<button class="btn" data-pass="change">${t('changePass')}</button><button class="btn d" data-pass="remove">${t('removePass')}</button>`:`<button class="btn p" data-pass="set">${ic('lock',16)} ${t('setPass')}</button>`}</div>
+    <div class="muted small" style="margin-top:12px">${t('passWarn')}</div></section>
+  <section class="card s12"><h2>${t('appearance')}</h2>
+    <div class="set"><span class="l">${t('mode')}</span><div class="seg"><button data-mode-set="light" class="${S.mode!=='dark'?'on':''}">${t('themeLight')}</button><button data-mode-set="dark" class="${S.mode==='dark'?'on':''}">${t('themeBlack')}</button></div></div>
+    <div class="set" style="align-items:flex-start"><div style="flex:1"><div class="l">${t('color')}</div><div class="muted small" style="margin-top:2px">${t('hueHint')}</div>
+      <label>${t('intensity')}</label><input id="kRange" type="range" min="0" max="100" value="${Math.round(S.k*100)}" style="max-width:260px">
+      <div class="btns" style="margin-top:12px"><button class="btn sm" data-act="resetColor">${t('resetColor')}</button></div></div>
+      <div class="wheelwrap"><div class="wheel" id="wheel"><div class="knob" id="knob"></div><div class="wc"><div id="hueNum">${Math.round(S.hue)}°</div></div></div></div></div>
+    <div class="set"><div><div class="l">${t('language')}</div><div class="muted small">${t('langHint')}</div></div><div class="seg"><button data-lang-set="en" class="${S.lang==='en'?'on':''}">English</button><button data-lang-set="ar" class="${S.lang==='ar'?'on':''}">العربية</button></div></div></section>
+  <section class="card s6"><h2>${t('baseCur')}</h2><select id="sBase" style="max-width:160px">${CUR3.map(c=>`<option ${c===base?'selected':''}>${c}</option>`).join('')}</select>
+    <div class="muted small" style="margin-top:8px">${t('baseHint')}</div></section>
+  <section class="card s6"><h2>${t('rates')}</h2><div class="muted small">${t('rateHint')}</div>
+    ${others.map(c=>`<div class="rate"><b><bdi>1 ${c}</bdi> =</b><input type="number" step="any" min="0" data-rate="${c}" value="${S.rates[c]??''}" inputmode="decimal"><b>${base}</b></div>`).join('')}</section>
+  <section class="card s6"><h2>${t('data')}</h2><div class="muted small" style="margin-bottom:12px">${t('localNote')} ${t('backupWarn')}</div>
+    <div class="btns"><button class="btn" data-act="csv">${t('exportCsv')}</button><button class="btn" data-act="csvmetals">${t('exportMetals')}</button><button class="btn" data-act="backup">${t('backup')}</button><button class="btn" data-act="restore">${t('restore')}</button><button class="btn d" data-act="reset">${t('reset')}</button></div>
+    <input type="file" id="file" accept="application/json,.json" hidden></section>
+  <section class="card s6"><h2>${t('categories')}</h2>
+    ${state.categories.map(c=>`<div class="row" style="cursor:default"><div class="mid">${esc(c[L()]||c.en)}</div><button class="btn sm d" data-delcat="${c.id}">${t('del')}</button></div>`).join('')}
+    <div class="btns" style="margin-top:12px"><input id="newCat" placeholder="${esc(t('catName'))}" style="flex:1;max-width:240px"><button class="btn p" data-act="addcat">${t('addCat')}</button></div></section>
+  <section class="card s12"><h2>${t('about')}</h2>
+    <a class="ghlink" href="https://github.com/mio-git-a-bit" target="_blank" rel="noopener noreferrer"><span class="ghi"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.921.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span><span class="ght"><b>GitHub</b><bdi dir="ltr" class="muted small">github.com/mio-git-a-bit</bdi></span><span class="gha">${ic('chev',16)}</span></a></section></div>`;
+}};
+
+function renderTB(){
+  const el=$('#tb');if(!el)return;
+  const inApp=session&&state&&screen!=='login';
+  let crumb='';
+  if(inApp){crumb=view==='person'?((state.people.find(p=>p.id===personId)||{}).name||t('people')):t(view)}
+  const dark=inApp&&state.settings.mode==='dark';
+  const html=`<div class="tb-brand">${LOGO}<b>${t('app')}</b></div>${crumb?`<span class="tb-sep"></span><span class="tb-crumb"><i></i>${esc(crumb)}</span>`:''}<div class="tb-sp"></div>${inApp?`<button class="tb-btn" data-mode-set="${dark?'light':'dark'}" title="${esc(dark?t('themeLight'):t('themeBlack'))}">${ic(dark?'sun':'moon',17)}</button><button class="tb-user" data-act="userMenu" title="${esc(t('switchUser'))}">${avatar(session.user.name,Math.round(state.settings.hue))}<span>${esc(session.user.name)}</span>${ic('chev',14)}</button><button class="tb-btn" data-act="lockNow" title="${esc(t('lockNow'))}">${ic('lock',17)}</button>`:''}`;
+  if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
+}
+let lastKey='';
+function renderApp(){
+  const key=view+'|'+personId,enter=key!==lastKey;lastKey=key;
+  const tabs=[['dashboard','home'],['transactions','list'],['accounts','bank'],['people','users'],['metals','coins'],['settings','sliders']];
+  const active=view==='person'?'people':view;
+  const u=session.user;
+  $('#app').innerHTML=`<nav>${tabs.map(([k,i])=>`<button class="nv ${active===k?'on':''}" data-view="${k}">${ic(i,19)}<span>${t(k)}</span></button>`).join('')}<div class="sp"></div>
+    <div class="side-note">${ic('shield',16)}<span>${t('localNote')}</span></div></nav><main${enter?' class="enter"':''}>${views[view]()}</main>`;
+  if(view==='settings')sizeHueKnob();
+}
+
+/* ---------- sign-in screens ---------- */
+function pickerHTML(){
+  return `<p class="authsub">${t('whoUses')}</p><div class="ucards">${meta.users.map(u=>`<button class="ucard" data-user="${u.id}">${avatar(u.name,u.hue??hashHue(u.name),'lg')}<span class="nm">${esc(u.name)}</span>${parked[u.id]?`<span class="um-s on"><i></i>${t('signedInShort')}</span>`:u.locked?`<span class="muted">${ic('lock',14)}</span>`:''}</button>`).join('')}<button class="ucard add" data-act="adduser">${ic('plus',22)}<span>${t('addUser')}</span></button></div>`;
+}
+function createHTML(){
+  const first=!meta.users.length;
+  return `<p class="authsub">${first?t('welcome'):t('addUser')}${first&&legacy?'<br>'+t('existingData'):''}</p>
+  <form id="createForm"><label style="margin-top:0">${t('yourName')}</label><input name="name" required maxlength="40" autocomplete="off">
+  <label>${t('passwordOpt')}</label><input name="p1" type="password" autocomplete="new-password">
+  <label>${t('confirmPass')}</label><input name="p2" type="password" autocomplete="new-password">
+  <div class="muted small" style="margin-top:10px">${t('passWarn')}</div>
+  <div class="btns" style="margin-top:18px"><button class="btn p" type="submit">${t('create')}</button>${first?'':`<button class="btn" type="button" data-act="loginBack">${t('cancel')}</button>`}</div></form>`;
+}
+function unlockHTML(){
+  const u=loginUser;
+  return `<div class="center" style="margin-bottom:14px">${avatar(u.name,u.hue??hashHue(u.name),'lg')}<h2 style="margin:10px 0 0;font-size:19px">${esc(u.name)}</h2></div>
+  <form id="unlockForm"><input name="pass" type="password" placeholder="${esc(t('currentPass'))}" required autocomplete="off">
+  <div class="btns" style="margin-top:14px"><button class="btn p" type="submit">${t('unlock')}</button><button class="btn" type="button" data-act="loginBack">${t('back')}</button></div></form>
+  <div style="margin-top:14px"><button class="linkbtn" data-act="eraseuser">${t('forgot')}</button></div>`;
+}
+function renderLogin(){
+  const body=(loginMode==='create'||!meta.users.length)?createHTML():loginMode==='unlock'?unlockHTML():pickerHTML();
+  $('#app').innerHTML=`<div class="auth"><div class="authbox"><div class="authhead">${LOGO}<h1>${t('app')}</h1></div>${body}
+  <div class="seg" style="margin-top:22px"><button data-login-lang="en" class="${loginLang==='en'?'on':''}">English</button><button data-login-lang="ar" class="${loginLang==='ar'?'on':''}">العربية</button></div>
+  <div class="side-note" style="margin-top:18px;padding:0">${ic('shield',16)}<span>${t('localNote')}</span></div></div></div>`;
+  const f=$('#createForm input,#unlockForm input');if(f)f.focus();
+}
+function render(){
+  const lang=L();
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  document.title=t('app');
+  if(screen==='login'||!session)renderLogin();else renderApp();
+  renderTB();
+}
+
+/* =====================================================================
+   Sessions: create / unlock / lock
+   ===================================================================== */
+let saving=Promise.resolve();
+function save(){
+  if(!session)return Promise.resolve();
+  saving=saving.then(async()=>{
+    const rec=session.key?await sealState(state,session.key,session.salt):state;
+    await kvPut('user:'+session.user.id,rec);
+  }).catch(e=>console.error('save failed',e));
+  return saving;
+}
+const saveMeta=()=>kvPut('meta',meta);
+async function enter(user,key,salt,preloaded){
+  let st=preloaded;
+  if(!st){const rec=await kvGet('user:'+user.id);st=rec&&rec.enc?await openState(rec,key):rec}
+  state=migrate(st||defaultState(loginLang));
+  session={user,key,salt};
+  meta.last=user.id;
+  if(user.hue==null){user.hue=state.settings.hue}
+  await saveMeta();
+  screen='app';view='dashboard';lastKey='';
+  applyLook();render();
+}
+const parked={};
+async function parkCurrent(){if(session&&state){await save();parked[session.user.id]={session,state}}}
+async function switchUser(id){
+  if(session&&session.user.id===id)return;
+  const u=meta.users.find(x=>x.id===id);if(!u)return;
+  await parkCurrent();session=null;state=null;
+  if(parked[id]){const p=parked[id];delete parked[id];session=p.session;state=p.state;meta.last=id;await saveMeta();screen='app';view='dashboard';lastKey='';applyLook();render();return}
+  if(u.locked){screen='login';loginMode='unlock';loginUser=u;applyLook();render();return}
+  await enter(u,null,null);
+}
+async function leaveTo(mode){await parkCurrent();session=null;state=null;screen='login';loginMode=mode;loginUser=null;applyLook();render()}
+function userMenuEl(){
+  const cur=session.user,others=meta.users.filter(u=>u.id!==cur.id);
+  const av=u=>avatar(u.name,u.hue??hashHue(u.name));
+  const el=document.createElement('div');el.className='umenu';
+  el.innerHTML=`<div class="um-h">${av(cur)}<div class="um-t"><b>${esc(cur.name)}</b><span class="um-s on"><i></i>${t('signedIn')}</span></div></div>
+  ${others.length?`<div class="um-l">${others.map(u=>{const live=!!parked[u.id];return `<button class="um-u" data-switch="${u.id}">${av(u)}<div class="um-t"><b>${esc(u.name)}</b><span class="um-s${live?' on':''}">${live?'<i></i>'+t('signedInShort'):u.locked?ic('lock',12)+' '+t('needPass'):t('tapSwitch')}</span></div></button>`}).join('')}</div>`:''}
+  <div class="um-sep"></div>
+  <button class="um-a" data-act="umSettings">${ic('sliders',16)}<span>${t('settings')}</span></button>
+  <button class="um-a" data-act="umAdd">${ic('plus',16)}<span>${t('addUser')}</span></button>
+  <button class="um-a" data-act="lockNow">${ic('lock',16)}<span>${t('lockNow')}</span></button>
+  ${Object.keys(parked).length?`<button class="um-a" data-act="umAll">${ic('x',16)}<span>${t('signOutAll')}</span></button>`:''}`;
+  return el;
+}
+async function lockApp(){
+  await save();await saveMeta();
+  session=null;state=null;screen='login';loginMode='pick';loginUser=null;
+  try{loginLang=localStorage.getItem('ledger-lang')||loginLang}catch(_){}
+  applyLook();render();
+}
+async function createUser(name,pass){
+  const lk=lookSettings();
+  const user={id:uid(),name,locked:false,hue:lk.hue!=null?+lk.hue:265};
+  let st=null,key=null,salt=null;
+  if(!meta.users.length&&legacy){st=await kvGet('state');if(st){st=migrate(st)}}
+  if(!st)st=defaultState(loginLang,lk);
+  if(pass){salt=crypto.getRandomValues(new Uint8Array(16));key=await deriveKey(pass,salt);user.locked=true}
+  meta.users.push(user);
+  state=migrate(st);session={user,key,salt};
+  await save();
+  if(legacy&&meta.users.length===1){try{await kvDel('state')}catch(_){}legacy=false}
+  await saveMeta();
+  meta.last=user.id;
+  screen='app';view='dashboard';lastKey='';applyLook();render();
+}
+async function verifyPass(p){
+  const rec=await kvGet('user:'+session.user.id);
+  if(!rec||!rec.enc)return true;
+  try{await openState(rec,await deriveKey(p,rec.salt));return true}catch(e){return false}
+}
+async function removeUserData(user){
+  await kvDel('user:'+user.id);
+  meta.users=meta.users.filter(u=>u.id!==user.id);
+  if(meta.last===user.id)meta.last=null;
+  await saveMeta();
+}
+
+/* =====================================================================
+   Dialogs
+   ===================================================================== */
+const dlg=$('#dlg');
+function openDlg(html){dlg.innerHTML=`<button type="button" class="dx" data-act="closedlg" aria-label="Close">${ic('x',16)}</button>`+html;if(!dlg.open)dlg.showModal()}
+function closeDlg(){dlg.close()}
+function ask(msg){return new Promise(res=>{
+  const c=document.createElement('dialog');
+  c.innerHTML=`<p style="margin-top:0;font-weight:550">${esc(msg)}</p><div class="btns"><button class="btn p" value="y">OK</button><button class="btn" value="n">${t('cancel')}</button></div>`;
+  document.body.appendChild(c);
+  c.addEventListener('click',e=>{const b=e.target.closest('button');if(b){c.close();c.remove();res(b.value==='y')}});
+  c.addEventListener('cancel',()=>{c.remove();res(false)});
+  c.showModal();
+})}
+const curOpts=(sel)=>[...new Set([...CUR3,sel].filter(Boolean))].map(c=>`<option value="${c}" ${c===sel?'selected':''}>${c}</option>`).join('');
+const formBtns=(id,delAttr)=>`<div class="btns" style="margin-top:20px"><button class="btn p" type="submit">${t('save')}</button><button class="btn" type="button" data-act="close">${t('cancel')}</button>${id?`<button class="btn d" type="button" ${delAttr}="${id}">${t('del')}</button>`:''}</div>`;
+const accOptsFor=(cur,sel,none)=>(none?`<option value="">${t('noAccount')}</option>`:'')+state.accounts.filter(a=>!cur||a.currency===cur).map(a=>`<option value="${a.id}" ${a.id===sel?'selected':''}>${esc(a.name)} (${esc(a.currency)})</option>`).join('');
+function purOpts(metal,purity){
+  const list=metal==='gold'?KARATS.map(k=>({v:k/24,l:k+'K'})):SILVER.map(p=>({v:p,l:String(Math.round(p*1000))}));
+  const hit=list.some(o=>Math.abs(o.v-purity)<1e-9);
+  return list.map(o=>`<option value="${o.v}" ${Math.abs(o.v-purity)<1e-9?'selected':''}>${o.l}</option>`).join('')+`<option value="custom" ${hit?'':'selected'}>${t('custom')}</option>`;
+}
+
+function openTx(id){
+  if(!state.accounts.length){toast(t('needAcc'));return}
+  const x=id?state.txs.find(z=>z.id===id):{type:'expense',date:today(),accountId:state.accounts[0].id,toAccountId:'',amount:'',categoryId:'',note:''};
+  const accOpts=sel=>state.accounts.map(a=>`<option value="${a.id}" ${a.id===sel?'selected':''}>${esc(a.name)} (${esc(a.currency)})</option>`).join('');
+  const catOpts=`<option value="">${t('uncategorized')}</option>`+state.categories.map(c=>`<option value="${c.id}" ${c.id===x.categoryId?'selected':''}>${esc(c[L()]||c.en)}</option>`).join('');
+  openDlg(`<form id="txf"><h1>${id?t('editTx'):t('newTx')}</h1>
+  <div class="seg full" style="margin-top:14px">${['expense','income','transfer'].map(k=>`<label><input type="radio" name="type" value="${k}" ${x.type===k?'checked':''}>${t(k)}</label>`).join('')}</div>
+  <div class="f2"><div><label>${t('date')}</label><input type="date" name="date" value="${x.date}" required></div>
+  <div><label>${t('amount')} <span id="curA"></span></label><input type="number" name="amount" step="any" min="0" inputmode="decimal" value="${x.amount}" required></div></div>
+  <label id="lFrom">${t('account')}</label><select name="accountId">${accOpts(x.accountId)}</select>
+  <div id="boxTo"><label>${t('to')}</label><select name="toAccountId">${accOpts(x.toAccountId||(state.accounts[1]?state.accounts[1].id:''))}</select></div>
+  <div id="boxRecv"><label>${t('received')} <span id="curB"></span></label><input type="number" name="toAmount" step="any" min="0" inputmode="decimal" value="${x.toAmount??''}"></div>
+  <div id="boxCat"><label>${t('category')}</label><select name="categoryId">${catOpts}</select></div>
+  <label>${t('note')}</label><input name="note" value="${esc(x.note)}">${formBtns(id,'data-deltx')}</form>`);
+  const f=$('#txf');
+  const upd=()=>{
+    const E=f.elements,type=E.type.value,a=acc(E.accountId.value),b=acc(E.toAccountId.value);
+    $('#boxTo').style.display=type==='transfer'?'':'none';
+    $('#boxCat').style.display=type==='transfer'?'none':'';
+    $('#lFrom').textContent=type==='transfer'?t('from'):t('account');
+    $('#curA').textContent=a?'('+a.currency+')':'';
+    const diff=type==='transfer'&&a&&b&&a.currency!==b.currency;
+    $('#boxRecv').style.display=diff?'':'none';$('#curB').textContent=b?'('+b.currency+')':'';
+  };
+  f.addEventListener('change',upd);upd();
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const E=f.elements,type=E.type.value,amount=+E.amount.value;
+    if(!(amount>0)){toast(t('badAmount'));return}
+    const o={id:x.id||uid(),type,date:E.date.value,accountId:E.accountId.value,amount:r3(amount),note:E.note.value.trim()};
+    if(type==='transfer'){
+      o.toAccountId=E.toAccountId.value;
+      if(o.toAccountId===o.accountId){toast(t('sameAcc'));return}
+      const a=acc(o.accountId),b=acc(o.toAccountId);
+      if(a.currency!==b.currency){const ta=+E.toAmount.value;if(!(ta>0)){toast(t('badAmount'));return}o.toAmount=r3(ta)}
+    }else o.categoryId=E.categoryId.value;
+    const i=state.txs.findIndex(z=>z.id===o.id);
+    if(i>=0)state.txs[i]=o;else state.txs.push(o);
+    save();closeDlg();render();
+  });
+}
+function openAcc(id){
+  const a=id?acc(id):{name:'',currency:state.settings.base,opening:0,kind:'bank'};
+  openDlg(`<form id="af"><h1>${id?t('editAcc'):t('newAcc')}</h1>
+  <label style="margin-top:6px">${t('accType')}</label>
+  <div class="seg full">${['bank','cash'].map(k=>`<label><input type="radio" name="kind" value="${k}" ${(a.kind==='cash'?'cash':'bank')===k?'checked':''}>${ic(k==='cash'?'cash':'bank',16)} ${t(k==='cash'?'cashAcc':'bankAcc')}</label>`).join('')}</div>
+  <label>${t('name')}</label><input name="name" value="${esc(a.name)}" required>
+  <div class="f2"><div><label>${t('currency')}</label><select name="currency">${curOpts(a.currency)}</select></div>
+  <div><label>${t('opening')}</label><input type="number" name="opening" step="any" inputmode="decimal" value="${a.opening}"></div></div>${formBtns(id,'data-delacc')}</form>`);
+  $('#af').addEventListener('submit',e=>{
+    e.preventDefault();const E=e.target.elements;
+    const o={id:id||uid(),name:E.name.value.trim(),currency:E.currency.value,opening:r3(+E.opening.value||0),kind:E.kind.value==='cash'?'cash':'bank'};
+    const i=state.accounts.findIndex(z=>z.id===o.id);
+    if(i>=0)state.accounts[i]=o;else state.accounts.push(o);
+    save();closeDlg();render();
+  });
+}
+function openMetalTx(id){
+  const h=id?state.metalTx.find(z=>z.id===id):{kind:'buy',metal:'gold',purity:21/24,grams:'',amount:'',currency:state.settings.base,date:today(),accountId:'',note:''};
+  openDlg(`<form id="mf"><h1>${id?t('editMetalTx'):t('newMetalTx')}</h1>
+  <div class="f2" style="margin-top:14px"><div class="seg full">${['buy','sell'].map(k=>`<label><input type="radio" name="kind" value="${k}" ${h.kind===k?'checked':''}>${t(k)}</label>`).join('')}</div>
+  <div class="seg full">${['gold','silver'].map(k=>`<label><input type="radio" name="metal" value="${k}" ${h.metal===k?'checked':''}>${t(k)}</label>`).join('')}</div></div>
+  <div class="f2"><div><label>${t('purity')}</label><select name="pur">${purOpts(h.metal,h.purity)}</select></div>
+  <div id="boxCp"><label>${t('customPurity')}</label><input type="number" name="cp" step="any" min="0" max="1" value="${h.purity}" inputmode="decimal"></div></div>
+  <div class="f2"><div><label>${t('weightG')}</label><input type="number" name="grams" step="any" min="0" inputmode="decimal" value="${h.grams}" required></div>
+  <div><label>${t('date')}</label><input type="date" name="date" value="${h.date}" required></div></div>
+  <div class="f2"><div><label id="lAmt">${t(h.kind==='buy'?'paid':'received')}</label><input type="number" name="amount" step="any" min="0" inputmode="decimal" value="${h.amount}" required></div>
+  <div><label>${t('currency')}</label><select name="currency">${curOpts(h.currency)}</select></div></div>
+  <div class="muted small" id="perG" style="margin-top:8px"></div>
+  <label>${t('optAccount')}</label><select name="accountId">${accOptsFor(h.currency,h.accountId,true)}</select>
+  <label>${t('note')}</label><input name="note" value="${esc(h.note||'')}">${formBtns(id,'data-delmtx')}</form>`);
+  const f=$('#mf');
+  const upd=()=>{
+    const E=f.elements;
+    $('#boxCp').style.display=E.pur.value==='custom'?'':'none';
+    $('#lAmt').textContent=t(E.kind.value==='buy'?'paid':'received');
+    const g=+E.grams.value,c=+E.amount.value;
+    $('#perG').innerHTML=g>0&&c>=0?`${t('costPerG')}: <bdi>${fmtNum(c/g,3)}</bdi> ${esc(E.currency.value)}`:'';
+  };
+  f.addEventListener('input',upd);
+  f.addEventListener('change',e=>{
+    const E=f.elements;
+    if(e.target.name==='metal')E.pur.innerHTML=purOpts(e.target.value,e.target.value==='gold'?21/24:0.925);
+    if(e.target.name==='currency')E.accountId.innerHTML=accOptsFor(E.currency.value,'',true);
+    upd();
+  });
+  upd();
+  f.addEventListener('submit',e=>{
+    e.preventDefault();const E=f.elements;
+    const purity=E.pur.value==='custom'?+E.cp.value:+E.pur.value;
+    const grams=+E.grams.value,amount=+E.amount.value;
+    if(!(grams>0)){toast(t('badAmount'));return}
+    if(!(purity>0&&purity<=1)){toast(t('customPurity'));return}
+    const o={id:id||uid(),kind:E.kind.value,metal:E.metal.value,purity,grams:r3(grams),amount:r3(amount),currency:E.currency.value,date:E.date.value,accountId:E.accountId.value,note:E.note.value.trim()};
+    const i=state.metalTx.findIndex(z=>z.id===o.id);
+    if(i>=0)state.metalTx[i]=o;else state.metalTx.push(o);
+    save();closeDlg();render();
+  });
+}
+function openPerson(id){
+  const p=id?person(id):{name:'',note:''};
+  openDlg(`<form id="pf2"><h1>${id?t('editPerson'):t('addPerson')}</h1>
+  <label>${t('personName')}</label><input name="name" value="${esc(p.name)}" required maxlength="60">
+  <label>${t('note')}</label><input name="note" value="${esc(p.note||'')}">${formBtns(id,'data-delperson')}</form>`);
+  $('#pf2').addEventListener('submit',e=>{
+    e.preventDefault();const E=e.target.elements;
+    const o={id:id||uid(),name:E.name.value.trim(),note:E.note.value.trim()};
+    const i=state.people.findIndex(z=>z.id===o.id);
+    if(i>=0)state.people[i]=o;else state.people.push(o);
+    if(!id){personId=o.id;view='person'}
+    save();closeDlg();render();
+  });
+}
+function openDebt(pid,id){
+  const d=id?state.debts.find(z=>z.id===id):{personId:pid,kind:'lent',unit:state.settings.base,purity:21/24,amount:'',date:today(),accountId:'',note:''};
+  const isMetal=u=>u==='gold'||u==='silver';
+  const unitOpts=[...CUR3.map(c=>[c,c]),['gold',t('gold')],['silver',t('silver')]].map(([v,l])=>`<option value="${v}" ${v===d.unit?'selected':''}>${esc(l)}</option>`).join('');
+  openDlg(`<form id="df"><h1>${id?t('editEntry'):t('newEntry')} · ${esc((person(d.personId)||{}).name||'')}</h1>
+  <label>${t('kind')}</label><select name="kind">${['lent','theyPaid','borrowed','iPaid'].map(k=>`<option value="${k}" ${k===d.kind?'selected':''}>${t(k)}</option>`).join('')}</select>
+  <div class="f2"><div><label>${t('unit')}</label><select name="unit">${unitOpts}</select></div>
+  <div id="boxPur"><label>${t('purity')}</label><select name="pur">${purOpts(isMetal(d.unit)?d.unit:'gold',d.purity||21/24)}</select></div></div>
+  <div id="boxCp"><label>${t('customPurity')}</label><input type="number" name="cp" step="any" min="0" max="1" value="${d.purity||0.875}" inputmode="decimal"></div>
+  <div class="f2"><div><label id="lAmt">${t('amount')}</label><input type="number" name="amount" step="any" min="0" inputmode="decimal" value="${d.amount}" required></div>
+  <div><label>${t('date')}</label><input type="date" name="date" value="${d.date}" required></div></div>
+  <div id="boxAcc"><label>${t('optAccount')}</label><select name="accountId">${accOptsFor(isMetal(d.unit)?'':d.unit,d.accountId,true)}</select></div>
+  <label>${t('note')}</label><input name="note" value="${esc(d.note||'')}">${formBtns(id,'data-deldbt')}</form>`);
+  const f=$('#df');
+  const upd=()=>{
+    const E=f.elements,u=E.unit.value,m=isMetal(u);
+    f.querySelectorAll('.f2')[0].classList.toggle('one',!m);
+    $('#boxPur').style.display=m?'':'none';
+    $('#boxCp').style.display=m&&E.pur.value==='custom'?'':'none';
+    $('#boxAcc').style.display=m?'none':'';
+    $('#lAmt').textContent=m?t('weightG'):t('amount');
+  };
+  f.addEventListener('change',e=>{
+    const E=f.elements;
+    if(e.target.name==='unit'){
+      const u=E.unit.value;
+      if(isMetal(u))E.pur.innerHTML=purOpts(u,u==='gold'?21/24:0.925);
+      else E.accountId.innerHTML=accOptsFor(u,'',true);
+    }
+    upd();
+  });
+  upd();
+  f.addEventListener('submit',e=>{
+    e.preventDefault();const E=f.elements,u=E.unit.value,m=isMetal(u);
+    const amount=+E.amount.value;
+    if(!(amount>0)){toast(t('badAmount'));return}
+    const o={id:id||uid(),personId:d.personId,kind:E.kind.value,unit:u,amount:r3(amount),date:E.date.value,accountId:m?'':E.accountId.value,note:E.note.value.trim()};
+    if(m){
+      const purity=E.pur.value==='custom'?+E.cp.value:+E.pur.value;
+      if(!(purity>0&&purity<=1)){toast(t('customPurity'));return}
+      o.purity=purity;
+    }
+    const i=state.debts.findIndex(z=>z.id===o.id);
+    if(i>=0)state.debts[i]=o;else state.debts.push(o);
+    save();closeDlg();render();
+  });
+}
+function openPass(mode){
+  openDlg(`<form id="pwf"><h1>${t(mode==='set'?'setPass':mode==='change'?'changePass':'removePass')}</h1>
+  ${mode!=='set'?`<label>${t('currentPass')}</label><input type="password" name="cur" required autocomplete="off">`:''}
+  ${mode!=='remove'?`<label>${t('newPass')}</label><input type="password" name="n1" required autocomplete="new-password"><label>${t('confirmPass')}</label><input type="password" name="n2" required autocomplete="new-password"><div class="muted small" style="margin-top:10px">${t('passWarn')}</div>`:''}
+  <div class="btns" style="margin-top:20px"><button class="btn p" type="submit">${t('save')}</button><button class="btn" type="button" data-act="close">${t('cancel')}</button></div></form>`);
+  $('#pwf').addEventListener('submit',async e=>{
+    e.preventDefault();const E=e.target.elements;
+    if(mode!=='set'&&!(await verifyPass(E.cur.value))){toast(t('wrongPass'));return}
+    if(mode==='remove'){
+      session.key=null;session.salt=null;await save();
+      session.user.locked=false;await saveMeta();
+    }else{
+      if(E.n1.value.length<4){toast(t('passShort'));return}
+      if(E.n1.value!==E.n2.value){toast(t('passMismatch'));return}
+      const salt=crypto.getRandomValues(new Uint8Array(16));
+      session.key=await deriveKey(E.n1.value,salt);session.salt=salt;
+      await save();
+      session.user.locked=true;await saveMeta();
+    }
+    toast(t('saved'));closeDlg();render();
+  });
+}
+
+/* =====================================================================
+   Export / import / restart
+   ===================================================================== */
+function download(name,mime,content){
+  const url=URL.createObjectURL(new Blob([content],{type:mime}));
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+function exportCSV(){
+  const head=['date','type','account','currency','amount','to_account','to_currency','to_amount','category','note'];
+  const rows=[...state.txs].sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{
+    const a=acc(x.accountId),b=acc(x.toAccountId);
+    return [x.date,x.type,a?a.name:'',a?a.currency:'',x.amount,b?b.name:'',b?b.currency:'',x.type==='transfer'?(x.toAmount??x.amount):'',x.type==='transfer'?'':catName(x.categoryId),x.note||''].map(q).join(',');
+  });
+  download(`matrix-${today()}.csv`,'text/csv;charset=utf-8','﻿'+[head.join(','),...rows].join('\r\n'));
+}
+function exportMetalsCSV(){
+  const head=['date','kind','metal','purity','weight_g','pure_weight_g','amount','currency','per_g','note'];
+  const rows=[...state.metalTx].sort((a,b)=>a.date.localeCompare(b.date)).map(x=>[x.date,x.kind,x.metal,purLabel(x.metal,x.purity),x.grams,r3(x.grams*x.purity),x.amount,x.currency,r3(x.amount/x.grams),x.note||''].map(q).join(','));
+  download(`matrix-gold-silver-${today()}.csv`,'text/csv;charset=utf-8','﻿'+[head.join(','),...rows].join('\r\n'));
+}
+function restoreFile(file){
+  const r=new FileReader();
+  r.onload=async()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d||!Array.isArray(d.accounts)||!Array.isArray(d.txs)||!d.settings)throw 0;
+      if(!await ask(t('confirmRestore')))return;
+      const langChanged=d.settings.lang&&d.settings.lang!==L();
+      state=migrate(d);applyLook();await save();
+      if(langChanged)restartApp();else render();
+    }catch(e){toast(t('invalid'))}
+  };
+  r.readAsText(file);
+}
+async function restartApp(){
+  await save();await saveMeta();
+  const o=document.createElement('div');o.className='restart';o.textContent=t('restarting');document.body.appendChild(o);
+  setTimeout(()=>{
+    if(window.ledgerApp&&window.ledgerApp.restart)window.ledgerApp.restart();
+    else location.reload();
+  },350);
+}
+
+
+/* =====================================================================
+   Custom dropdowns and date picker (the system popups look out of place)
+   ===================================================================== */
+for(const proto of [HTMLSelectElement.prototype,HTMLInputElement.prototype]){
+  const d=Object.getOwnPropertyDescriptor(proto,'value');
+  if(d&&d.set)Object.defineProperty(proto,'value',{configurable:true,enumerable:d.enumerable,get(){return d.get.call(this)},set(v){d.set.call(this,v);if(this._sync)this._sync()}});
+}
+const CHEV='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const CHECK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+let popup=null;
+function closePopup(){
+  if(!popup)return;const p=popup;popup=null;
+  p.el.remove();p.owner.classList.remove('open');
+  document.removeEventListener('pointerdown',p.onDown,true);document.removeEventListener('keydown',p.onKey,true);
+  document.removeEventListener('scroll',p.onScroll,true);window.removeEventListener('resize',closePopup);
+}
+function openPopup(owner,anchor,el,key,alignEnd){
+  closePopup();
+  (anchor.closest('dialog')||document.body).appendChild(el);owner.classList.add('open');
+  const r=anchor.getBoundingClientRect(),vw=innerWidth,vh=innerHeight;
+  if(el.classList.contains('dd-menu'))el.style.minWidth=r.width+'px';
+  el.style.visibility='hidden';el.style.left='0px';el.style.top='0px';
+  const w=el.offsetWidth,h=el.offsetHeight;
+  const rtl=document.documentElement.dir==='rtl';let left=(rtl!==!!alignEnd)?r.right-w:r.left;left=Math.max(8,Math.min(left,vw-w-8));
+  let top=r.bottom+6;
+  if(top+h>vh-8){
+    if(r.top-6-h>8){top=r.top-6-h;el.classList.add('up')}
+    else{top=Math.max(8,vh-h-8);if(h>vh-16){el.style.maxHeight=(vh-16)+'px'}}
+  }
+  el.style.left=left+'px';el.style.top=top+'px';el.style.visibility='';
+  const onDown=e=>{if(!el.contains(e.target)&&!owner.contains(e.target))closePopup()};
+  const onKey=e=>{
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePopup();anchor.focus();return}
+    if(key)key(e);
+  };
+  const onScroll=e=>{if(!el.contains(e.target))closePopup()};
+  document.addEventListener('pointerdown',onDown,true);document.addEventListener('keydown',onKey,true);
+  document.addEventListener('scroll',onScroll,true);window.addEventListener('resize',closePopup);
+  popup={el,owner,onDown,onKey,onScroll};
+}
+function wrapControl(el,cls){
+  const wrap=document.createElement('div');wrap.className='dd '+(cls||'');
+  if(el.style.maxWidth)wrap.style.maxWidth=el.style.maxWidth;
+  if(el.style.flex)wrap.style.flex=el.style.flex;
+  el.classList.add('native');el.tabIndex=-1;el.before(wrap);wrap.appendChild(el);
+  const btn=document.createElement('button');btn.type='button';btn.className='dd-btn';wrap.appendChild(btn);
+  return {wrap,btn};
+}
+function enhanceSelect(sel){
+  const {wrap,btn}=wrapControl(sel,'dd-sel');
+  const sync=()=>{const o=sel.options[sel.selectedIndex];btn.innerHTML=`<span class="dd-t">${o?esc(o.textContent):''}</span>${CHEV}`;btn.disabled=sel.disabled};
+  sel._sync=sync;sync();
+  new MutationObserver(sync).observe(sel,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['disabled','selected']});
+  sel.addEventListener('change',sync);
+  const open=()=>{
+    if(popup&&popup.owner===wrap){closePopup();return}
+    const opts=[...sel.options],m=document.createElement('div');
+    m.className='dd-menu';m.setAttribute('role','listbox');
+    m.innerHTML=opts.map((o,i)=>`<div class="dd-opt${i===sel.selectedIndex?' sel':''}" data-i="${i}"${o.disabled?' data-dis':''}><span>${esc(o.textContent)}</span>${i===sel.selectedIndex?CHECK:''}</div>`).join('');
+    let hi=Math.max(0,sel.selectedIndex);
+    const mark=()=>{[...m.children].forEach((c,i)=>c.classList.toggle('hi',i===hi));const c=m.children[hi];if(c&&c.scrollIntoView)c.scrollIntoView({block:'nearest'})};
+    const pick=i=>{sel.selectedIndex=i;sel.dispatchEvent(new Event('change',{bubbles:true}));closePopup();btn.focus()};
+    m.addEventListener('click',e=>{const o=e.target.closest('.dd-opt');if(o&&!o.hasAttribute('data-dis'))pick(+o.dataset.i)});
+    m.addEventListener('pointermove',e=>{const o=e.target.closest('.dd-opt');if(o&&+o.dataset.i!==hi){hi=+o.dataset.i;mark()}});
+    openPopup(wrap,btn,m,e=>{
+      if(e.key==='ArrowDown'){e.preventDefault();hi=Math.min(opts.length-1,hi+1);mark()}
+      else if(e.key==='ArrowUp'){e.preventDefault();hi=Math.max(0,hi-1);mark()}
+      else if(e.key==='Home'){e.preventDefault();hi=0;mark()}
+      else if(e.key==='End'){e.preventDefault();hi=opts.length-1;mark()}
+      else if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(hi)}
+      else if(e.key==='Tab')closePopup();
+    });
+    mark();
+  };
+  btn.addEventListener('click',open);
+  btn.addEventListener('keydown',e=>{if((e.key==='ArrowDown'||e.key==='ArrowUp')&&!popup){e.preventDefault();open()}});
+}
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function enhanceDate(inp){
+  const {wrap,btn}=wrapControl(inp,'dd-date');
+  const show=v=>v?new Intl.DateTimeFormat(locale(),{day:'numeric',month:'short',year:'numeric'}).format(new Date(v+'T12:00:00')):'—';
+  const sync=()=>{btn.innerHTML=`<span class="dd-t">${esc(show(inp.value))}</span>${ic('cal',17)}`;btn.disabled=inp.disabled};
+  inp._sync=sync;sync();inp.addEventListener('change',sync);inp.addEventListener('input',sync);
+  btn.addEventListener('click',()=>{
+    if(popup&&popup.owner===wrap){closePopup();return}
+    const base=inp.value?new Date(inp.value+'T12:00:00'):new Date(today()+'T12:00:00');
+    let y=base.getFullYear(),mo=base.getMonth();
+    const el=document.createElement('div');el.className='cal';
+    const wd=[...Array(7)].map((_,i)=>new Intl.DateTimeFormat(locale(),{weekday:'narrow'}).format(new Date(2023,0,1+i)));
+    const draw=()=>{
+      const first=new Date(y,mo,1),start=first.getDay();let cells='';
+      for(let i=0;i<42;i++){
+        const dt=new Date(y,mo,i-start+1),v=ymd(dt),out=dt.getMonth()!==mo;
+        cells+=`<button type="button" class="cal-d${out?' o':''}${v===inp.value?' s':''}${v===today()?' t':''}" data-v="${v}">${dt.getDate()}</button>`;
+      }
+      el.innerHTML=`<div class="cal-h"><button type="button" class="cal-n" data-n="-1"><span class="bk">${ic('chev',16)}</span></button><b>${esc(new Intl.DateTimeFormat(locale(),{month:'long',year:'numeric'}).format(first))}</b><button type="button" class="cal-n" data-n="1"><span class="flip">${ic('chev',16)}</span></button></div>
+      <div class="cal-g">${wd.map(w=>`<span class="cal-w">${esc(w)}</span>`).join('')}${cells}</div>
+      <div class="cal-f"><button type="button" data-today>${t('today')}</button>${inp.required?'':`<button type="button" data-clear>${t('clear')}</button>`}</div>`;
+    };
+    const set=v=>{inp.value=v;inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));closePopup();btn.focus()};
+    el.addEventListener('click',e=>{
+      const n=e.target.closest('[data-n]'),d=e.target.closest('[data-v]');
+      if(n){mo+=+n.dataset.n;if(mo<0){mo=11;y--}else if(mo>11){mo=0;y++}draw();return}
+      if(d){set(d.dataset.v);return}
+      if(e.target.closest('[data-today]')){set(today());return}
+      if(e.target.closest('[data-clear]'))set('');
+    });
+    draw();openPopup(wrap,btn,el,e=>{if(e.key==='Tab')closePopup()});
+  });
+}
+function enhanceAll(){
+  document.querySelectorAll('select:not(.native)').forEach(enhanceSelect);
+  document.querySelectorAll('input[type=date]:not(.native)').forEach(enhanceDate);
+}
+new MutationObserver(ms=>{
+  for(const m of ms)for(const n of m.addedNodes)
+    if(n.nodeType===1&&((n.matches&&n.matches('select,input[type=date]'))||(n.querySelector&&n.querySelector('select,input[type=date]')))){enhanceAll();return}
+}).observe(document.body,{childList:true,subtree:true});
+
+/* =====================================================================
+   Events
+   ===================================================================== */
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-view],[data-fpre],[data-fclr],[data-act],[data-tx],[data-mtx],[data-dbt],[data-person],[data-newentry],[data-editperson],[data-accedit],[data-deltx],[data-delmtx],[data-deldbt],[data-delperson],[data-delacc],[data-delcat],[data-mode-set],[data-lang-set],[data-login-lang],[data-user],[data-pass],[data-fkind],[data-switch]');
+  if(!el)return;
+  const d=el.dataset;
+  if(el.closest('.umenu'))closePopup();
+  if(d.switch){await switchUser(d.switch);return}
+  if(d.loginLang){loginLang=d.loginLang;try{localStorage.setItem('ledger-lang',loginLang)}catch(_){}render();return}
+  if(d.user){
+    const u=meta.users.find(x=>x.id===d.user);if(!u)return;
+    if(parked[u.id]){await switchUser(u.id);return}
+    if(u.locked){loginUser=u;loginMode='unlock';render()}else await enter(u,null,null);
+    return}
+  if(d.view){view=d.view;render();scrollTo(0,0);return}
+  if(d.fkind){filters.kind=d.fkind;render();return}
+  if(d.fpre){const r=presetRange(d.fpre);if(filters.from===r[0]&&filters.to===r[1]){filters.from=filters.to=''}else{filters.from=r[0];filters.to=r[1]}render();return}
+  if(d.fclr){filters.from=filters.to='';render();return}
+  if(d.person){personId=d.person;view='person';render();scrollTo(0,0);return}
+  if(d.newentry){openDebt(d.newentry);return}
+  if(d.editperson){openPerson(d.editperson);return}
+  if(d.dbt){openDebt(null,d.dbt);return}
+  if(d.tx){openTx(d.tx);return}
+  if(d.mtx){openMetalTx(d.mtx);return}
+  if(d.accedit){openAcc(d.accedit);return}
+  if(d.pass){openPass(d.pass);return}
+  if(d.modeSet){state.settings.mode=d.modeSet;applyLook();save();render();return}
+  if(d.langSet){
+    if(d.langSet!==L()){state.settings.lang=d.langSet;applyLook();restartApp()}
+    return}
+  if(d.deltx){if(await ask(t('confirmDel'))){state.txs=state.txs.filter(x=>x.id!==d.deltx);save();closeDlg();render()}return}
+  if(d.delmtx){if(await ask(t('confirmDel'))){state.metalTx=state.metalTx.filter(x=>x.id!==d.delmtx);save();closeDlg();render()}return}
+  if(d.deldbt){if(await ask(t('confirmDel'))){state.debts=state.debts.filter(x=>x.id!==d.deldbt);save();closeDlg();render()}return}
+  if(d.delperson){
+    if(await ask(t('confirmDelPerson'))){state.debts=state.debts.filter(x=>x.personId!==d.delperson);state.people=state.people.filter(p=>p.id!==d.delperson);view='people';save();closeDlg();render()}return}
+  if(d.delacc){
+    const used=state.txs.some(x=>x.accountId===d.delacc||x.toAccountId===d.delacc)||state.metalTx.some(x=>x.accountId===d.delacc)||state.debts.some(x=>x.accountId===d.delacc);
+    if(used){toast(t('accHasTx'));return}
+    if(await ask(t('confirmDel'))){state.accounts=state.accounts.filter(a=>a.id!==d.delacc);save();closeDlg();render()}return}
+  if(d.delcat){
+    if(await ask(t('confirmDel'))){state.categories=state.categories.filter(c=>c.id!==d.delcat);state.txs.forEach(x=>{if(x.categoryId===d.delcat)x.categoryId=''});save();render()}return}
+  switch(d.act){
+    case 'newtx':openTx();break;
+    case 'newacc':openAcc();break;
+    case 'newmetal':openMetalTx();break;
+    case 'newperson':openPerson();break;
+    case 'close':closeDlg();break;
+    case 'csv':exportCSV();break;
+    case 'csvmetals':exportMetalsCSV();break;
+    case 'backup':download(`ledger-backup-${session.user.name}-${today()}.json`,'application/json',JSON.stringify(state,null,2));break;
+    case 'restore':$('#file').click();break;
+    case 'reset':if(await ask(t('confirmReset'))){const s=state.settings;state=defaultState(s.lang,s);applyLook();save();render()}break;
+    case 'addcat':{const v=$('#newCat').value.trim();if(v){state.categories.push({id:uid(),en:v,ar:v});save();render()}break}
+    case 'resetColor':state.settings.hue=265;state.settings.k=0.7;applyLook();save();saveMeta();render();break;
+    case 'closedlg':closeDlg();break;
+    case 'lockNow':await lockApp();break;
+    case 'userMenu':{if(popup&&popup.owner===el){closePopup();break}openPopup(el,el,userMenuEl(),null,true);break}
+    case 'umSettings':view='settings';render();scrollTo(0,0);break;
+    case 'umAdd':await leaveTo('create');break;
+    case 'switchPick':await leaveTo('pick');break;
+    case 'umAll':for(const k of Object.keys(parked))delete parked[k];await lockApp();break;
+    case 'deleteuser':if(await ask(t('confirmEraseUser'))){const u=session.user;await save();session=null;state=null;await removeUserData(u);screen='login';loginMode='pick';applyLook();render()}break;
+    case 'adduser':loginMode='create';render();break;
+    case 'loginBack':loginMode='pick';loginUser=null;render();break;
+    case 'eraseuser':if(await ask(t('confirmEraseUser'))){delete parked[loginUser.id];await removeUserData(loginUser);loginUser=null;loginMode='pick';render()}break;
+  }
+});
+document.addEventListener('submit',async e=>{
+  const f=e.target;
+  if(f.id==='createForm'){
+    e.preventDefault();const E=f.elements,name=E.name.value.trim(),p1=E.p1.value,p2=E.p2.value;
+    if(!name)return;
+    if(p1){if(p1.length<4){toast(t('passShort'));return}if(p1!==p2){toast(t('passMismatch'));return}}
+    await createUser(name,p1);
+  }else if(f.id==='unlockForm'){
+    e.preventDefault();
+    try{
+      const rec=await kvGet('user:'+loginUser.id);
+      if(!rec||!rec.enc){await enter(loginUser,null,null,rec);return}
+      const key=await deriveKey(f.elements.pass.value,rec.salt);
+      const st=await openState(rec,key);
+      await enter(loginUser,key,rec.salt,st);
+    }catch(err){toast(t('wrongPass'));const i=f.elements.pass;if(i){i.value='';i.focus()}}
+  }
+});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(!session)return;
+  if(el.id==='sBase'){changeBase(el.value);save();render()}
+  else if(el.dataset&&el.dataset.rate){state.settings.rates[el.dataset.rate]=+el.value||0;save();render()}
+  else if(el.dataset&&el.dataset.price){state.settings.metalPrices[el.dataset.price]=+el.value||0;save();render()}
+  else if(el.id==='fAcc'){filters.acc=el.value;render()}
+  else if(el.id==='fFrom'||el.id==='fTo'){filters[el.id==='fFrom'?'from':'to']=el.value;if(filters.from&&filters.to&&filters.from>filters.to){const a=filters.from;filters.from=filters.to;filters.to=a}render()}
+  else if(el.id==='uName'){const v=el.value.trim();if(v){session.user.name=v;saveMeta();render()}}
+  else if(el.id==='file'&&el.files[0]){restoreFile(el.files[0]);el.value=''}
+});
+function updateConv(){
+  const cv=$('#cvOut');
+  if(cv){const cp=$('#cvP');cv.innerHTML=convHTML(+$('#cvIn').value||0,cp?+cp.value||0:0)}
+  const rv=$('#rvOut');
+  if(rv)rv.innerHTML=revHTML(+$('#rvIn').value||0,+$('#rvK').value);
+}
+document.addEventListener('input',e=>{
+  const id=e.target.id;
+  if(id==='fQ'){
+    filters.q=e.target.value;const pos=e.target.selectionStart;render();
+    const n=$('#fQ');n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}
+  }else if(id==='cvIn'||id==='cvP'||id==='rvIn'||id==='rvK')updateConv();
+  else if(id==='kRange'&&session){state.settings.k=+e.target.value/100;applyLook()}
+});
+document.addEventListener('change',e=>{if(e.target.id==='kRange'&&session){save();saveMeta()}});
+dlg.addEventListener('click',e=>{if(e.target===dlg)closeDlg()});
+
+/* hue wheel */
+let wheelDrag=false;
+function wheelSet(e){
+  const w=$('#wheel');if(!w)return;
+  const r=w.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
+  const h=(Math.atan2(dx,-dy)*180/Math.PI+360)%360;
+  state.settings.hue=Math.round(h);applyLook();sizeHueKnob();
+}
+document.addEventListener('pointerdown',e=>{
+  if(!session||!e.target.closest||!e.target.closest('#wheel'))return;
+  wheelDrag=true;try{$('#wheel').setPointerCapture(e.pointerId)}catch(_){}
+  wheelSet(e);e.preventDefault();
+});
+document.addEventListener('pointermove',e=>{if(wheelDrag)wheelSet(e)});
+document.addEventListener('pointerup',()=>{
+  if(!wheelDrag)return;wheelDrag=false;
+  if(session){save();saveMeta()}
+});
+
+/* chart tooltip */
+const tip=document.createElement('div');tip.className='tip';tip.hidden=true;document.body.appendChild(tip);
+document.addEventListener('mousemove',e=>{
+  const el=e.target.closest&&e.target.closest('[data-tip]');
+  if(!el){tip.hidden=true;return}
+  tip.innerHTML=esc(el.getAttribute('data-tip')).replace(/\n/g,'<br>');tip.hidden=false;
+  const w=tip.offsetWidth;let x=e.clientX+14;if(x+w>innerWidth-8)x=e.clientX-w-14;
+  tip.style.left=x+'px';tip.style.top=(e.clientY+16)+'px';
+});
+
+/* =====================================================================
+   Boot
+   ===================================================================== */
+(async()=>{
+  try{loginLang=localStorage.getItem('ledger-lang')||((navigator.language||'en').toLowerCase().startsWith('ar')?'ar':'en')}catch(_){}
+  if(loginLang!=='ar')loginLang='en';
+  meta=(await kvGet('meta'))||{v:1,users:[],last:null};
+  legacy=!meta.users.length&&!!(await kvGet('state'));
+  applyLook();
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+  if(meta.users.length===1&&!meta.users[0].locked){await enter(meta.users[0],null,null);return}
+  screen='login';loginMode=meta.users.length?'pick':'create';render();
+})();
+
+/* block select-all / drag-select outside input fields */
+document.addEventListener('selectstart',e=>{const t=e.target&&(e.target.nodeType===3?e.target.parentElement:e.target);if(!t||!t.closest||!t.closest('input,textarea,[contenteditable=true]'))e.preventDefault()});
+document.addEventListener('dragstart',e=>{if(!e.target.closest||!e.target.closest('input,textarea'))e.preventDefault()});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){const t=e.target;if(!(t&&t.matches&&t.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea')))e.preventDefault()}},true);
+</script>
+</body>
+</html>
