@@ -1,3 +1,6 @@
+<img width="1280" height="973" alt="dashboard-dark" src="https://github.com/user-attachments/assets/29a9305e-298b-4e73-aa17-10882766d042" />
+<img width="1280" height="360" alt="banner" src="https://github.com/user-attachments/assets/1d65e8bd-29b1-4b5d-ae91-2b27f6c1d13b" />
+<img width="1280" height="773" alt="activity-light" src="https://github.com/user-attachments/assets/69cccd7c-2ce0-45e6-848e-4b8159c0c10f" />
 [README.md](https://github.com/user-attachments/files/33311374/README.md)
 <p align="center">
   <img src="assets/banner.png" alt="MATRIX" width="100%">
